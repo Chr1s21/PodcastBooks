@@ -11,90 +11,133 @@ def get_db_connection():
 def init_db():
     conn = get_db_connection()
     
-    # 1. Tabelle für die Autoren
+    # 1. Tabelle für Autoren/Gäste
     conn.execute('''
         CREATE TABLE IF NOT EXISTS autoren (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            folge INTEGER,
             name TEXT NOT NULL,
             kategorie TEXT     
         )
     ''')
     
-    # 2. Tabelle für die Bücher (verknüpft mit der Autoren-ID)
+    # 2. Tabelle für Bücher (ausschließlich Open Library ID + Link)
     conn.execute('''
         CREATE TABLE IF NOT EXISTS buecher (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             titel TEXT NOT NULL,
-            link TEXT,     
+            link TEXT,
+            olid TEXT,               -- Open Library ID (z.B. OL50534585M)
             autor_id INTEGER NOT NULL,
             FOREIGN KEY (autor_id) REFERENCES autoren (id)
         )
     ''')
     
-  
+    conn.commit()
+    conn.close()
 
 @app.route('/')
 def home():
     conn = get_db_connection()
     
-    # Wir holen alle Autoren
-    autoren = conn.execute('SELECT * FROM autoren').fetchall()
-    
-    # Wir holen alle Bücher
+    # Sortierung: Neueste Folgen/Einträge immer zuerst (DESC)
+    autoren_raw = conn.execute('SELECT * FROM autoren ORDER BY folge DESC, id DESC').fetchall()
     buecher = conn.execute('SELECT * FROM buecher').fetchall()
-    
     conn.close()
-    
-    # Wir übergeben sowohl Autoren als auch Bücher an das HTML
+
+    # Kategorien (z.B. "Influencer, Finanzen") in eine Python-Liste umwandeln
+    autoren = []
+    for autor in autoren_raw:
+        a_dict = dict(autor)
+        if a_dict['kategorie']:
+            a_dict['kategorien_liste'] = [k.strip() for k in a_dict['kategorie'].split(',') if k.strip()]
+        else:
+            a_dict['kategorien_liste'] = []
+        autoren.append(a_dict)
+
     return render_template('index.html', autoren=autoren, buecher=buecher)
 
-# Route 1: Neuen Autoren hinzufügen
+# --- AUTOR ROUTEN ---
+
 @app.route('/add_autor', methods=['POST'])
 def add_autor():
-    name = request.form['name']
+    folge = request.form.get('folge')
+    name = request.form.get('name')
+    kategorie = request.form.get('kategorie')
+    
     if name:
         conn = get_db_connection()
-        conn.execute('INSERT INTO autoren (name, kategorie) VALUES (?, ?)', (name, request.form['kategorie']))
+        conn.execute('INSERT INTO autoren (folge, name, kategorie) VALUES (?, ?, ?)', 
+                     (folge, name, kategorie))
         conn.commit()
         conn.close()
     return redirect(url_for('home'))
 
-# Route 2: Neues Buch hinzufügen
-@app.route('/add_buch', methods=['POST'])
-def add_buch():
-    titel = request.form['titel']
-    link = request.form['link']
-    autor_id = request.form['autor_id']
+@app.route('/edit_autor/<int:id>', methods=['POST'])
+def edit_autor(id):
+    folge = request.form.get('folge')
+    name = request.form.get('name')
+    kategorie = request.form.get('kategorie')
     
-    if titel and autor_id:
+    if name:
         conn = get_db_connection()
-        conn.execute('INSERT INTO buecher (titel, link, autor_id) VALUES (?, ?, ?)', 
-                     (titel, link, autor_id))
+        conn.execute('UPDATE autoren SET folge = ?, name = ?, kategorie = ? WHERE id = ?',
+                     (folge, name, kategorie, id))
         conn.commit()
         conn.close()
     return redirect(url_for('home'))
 
-# Route zum Löschen eines Buches
-@app.route('/delete_buch/<int:id>', methods=['POST'])
-def delete_buch(id):
+@app.route('/delete_autor/<int:id>', methods=['POST'])
+def delete_autor(id):
     conn = get_db_connection()
-    conn.execute('DELETE FROM buecher WHERE id = ?', (id,))
+    conn.execute('DELETE FROM buecher WHERE autor_id = ?', (id,))
+    conn.execute('DELETE FROM autoren WHERE id = ?', (id,))
     conn.commit()
     conn.close()
     return redirect(url_for('home'))
 
-# Route zum Löschen eines Autors
-@app.route('/delete_autor/<int:id>', methods=['POST'])
-def delete_autor(id):
+# --- BUCH ROUTEN ---
+
+@app.route('/add_buch', methods=['POST'])
+def add_buch():
+    titel = request.form.get('titel')
+    link = request.form.get('link')
+    olid = request.form.get('olid')
+    autor_id = request.form.get('autor_id')
+    
+    if olid:
+        olid = olid.strip()
+
+    if titel and autor_id:
+        conn = get_db_connection()
+        conn.execute('INSERT INTO buecher (titel, link, olid, autor_id) VALUES (?, ?, ?, ?)',
+                     (titel, link, olid, autor_id))
+        conn.commit()
+        conn.close()
+    return redirect(url_for('home'))
+
+@app.route('/edit_buch/<int:id>', methods=['POST'])
+def edit_buch(id):
+    titel = request.form.get('titel')
+    link = request.form.get('link')
+    olid = request.form.get('olid')
+    autor_id = request.form.get('autor_id')
+    
+    if olid:
+        olid = olid.strip()
+
+    if titel and autor_id:
+        conn = get_db_connection()
+        conn.execute('UPDATE buecher SET titel = ?, link = ?, olid = ?, autor_id = ? WHERE id = ?',
+                     (titel, link, olid, autor_id, id))
+        conn.commit()
+        conn.close()
+    return redirect(url_for('home'))
+
+@app.route('/delete_buch/<int:id>', methods=['POST'])
+def delete_buch(id):
     conn = get_db_connection()
-    
-    # Optional, aber sauber: Wenn ein Autor gelöscht wird, 
-    # löschen wir auch all seine Bücher (Kaskadierung)
-    conn.execute('DELETE FROM buecher WHERE autor_id = ?', (id,))
-    
-    # Jetzt den Autor selbst löschen
-    conn.execute('DELETE FROM autoren WHERE id = ?', (id,))
-    
+    conn.execute('DELETE FROM buecher WHERE id = ?', (id,))
     conn.commit()
     conn.close()
     return redirect(url_for('home'))
