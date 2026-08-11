@@ -80,8 +80,10 @@
                 <label>Gast zuordnen:</label>
                 <select name="autor_id" required>
                     {% for autor in autoren %}
-                        <option value="{{ autor['id'] }}">
-                            {% if autor['folge'] %}#{{ autor['folge'] }} {% endif %}{{ autor['name'] }}
+                        <option value="{{ autor['id'] }}"
+                            {% if autor['id']|string == selected_autor|string %}selected{% endif %}>
+                            {% if autor['folge'] %}#{{ autor['folge'] }} {% endif %}
+                            {{ autor['name'] }}
                         </option>
                     {% endfor %}
                 </select>
