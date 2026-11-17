@@ -55,6 +55,11 @@
         .kategorie-badge { cursor: pointer; }
         #filter-info { font-size: 0.85em; color: #718096; margin-top: 8px; }
 
+        .vorschlag-link { font-size: 0.85em; color: #28a745; font-weight: bold; text-decoration: none; margin-right: 15px; }
+        .vorschlag-link:hover { text-decoration: underline; }
+        details { display: inline-block; vertical-align: top; }
+        details[open] { display: block; }
+
         .affiliate-note { text-align: center; font-size: 0.85em; color: #666; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 15px; }
     </style>
 </head>
@@ -99,7 +104,7 @@
                 <small class="hinweis">Leer lassen – das Cover wird anhand von Titel und Gast automatisch gesucht.</small>
 
                 <label>Amazon Reflink (*):</label>
-                <input type="text" name="link" placeholder="https://amzn.to/...">
+                <input type="text" name="link" placeholder="leer lassen = Partnerlink wird automatisch erstellt">
                 
                 <label>Gast zuordnen:</label>
                 <select name="autor_id" required>
@@ -132,9 +137,9 @@
 
     {% if ohne_cover %}
         <div class="cover-bar">
-            <span>🖼️ {{ ohne_cover }} Bücher haben noch kein Cover.</span>
+            <span>🖼️ {{ ohne_cover }} Bücher ohne Cover oder mit Amazon-Suchlink.</span>
             <form action="/covers_nachladen" method="POST" style="margin:0;" onsubmit="this.querySelector('button').innerText='Suche läuft… (kann etwas dauern)'; this.querySelector('button').disabled=true;">
-                <button type="submit" class="btn-cover">Fehlende Cover automatisch suchen</button>
+                <button type="submit" class="btn-cover">Cover &amp; Partnerlinks aktualisieren</button>
             </form>
         </div>
     {% endif %}
@@ -161,6 +166,8 @@
                     <button type="submit" class="btn-delete">Gast löschen</button>
                 </form>
             </div>
+
+            <a href="/vorschlaege/{{ autor['id'] }}" class="vorschlag-link">📚 Bücher vorschlagen</a>
 
             <!-- Gast Bearbeiten -->
             <details>
