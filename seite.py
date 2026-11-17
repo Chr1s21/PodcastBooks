@@ -11,10 +11,10 @@ SEITE = {
     "titel": "Podcastbücher",
     "untertitel": "Die Bücher der Gäste aus dem Tim Gabel Podcast",
     # Impressum (Pflicht für Seiten mit Partnerlinks in Deutschland)
-    "name": "",          # Vor- und Nachname
-    "strasse": "",       # Straße und Hausnummer
-    "ort": "",           # PLZ und Ort
-    "email": "",         # E-Mail-Adresse
+    "name": "Christian Stier",          # Vor- und Nachname
+    "strasse": "Lärchenweg 76",       # Straße und Hausnummer
+    "ort": "71665 Vaihingen an der Enz",           # PLZ und Ort
+    "email": "podcastbuecher@gmail.com",         # E-Mail-Adresse
 }
 
 
