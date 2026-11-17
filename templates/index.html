@@ -39,12 +39,24 @@
         summary { cursor: pointer; font-size: 0.85em; color: #007BFF; text-decoration: underline; list-style: none; }
         .edit-box { background: #f0f4f8; padding: 10px; border-radius: 6px; margin-top: 8px; border: 1px solid #d0d7de; }
         
+        .cover-bar { display: flex; align-items: center; justify-content: space-between; gap: 15px; background: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .btn-cover { background-color: #007BFF; }
+        .btn-cover:hover { background-color: #0062cc; }
+        .btn-small { font-size: 11px; padding: 3px 6px; background-color: #6c757d; width: 100%; margin-top: 4px; }
+        .meldung { background: #d4edda; color: #155724; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; }
+        .hinweis { font-size: 0.8em; color: #718096; margin-top: -10px; display: block; margin-bottom: 10px; }
+        .kein-cover { font-size:0.8em; color:#718096; padding: 10px; }
+
         .affiliate-note { text-align: center; font-size: 0.85em; color: #666; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 15px; }
     </style>
 </head>
 <body>
 
     <h1>📚 Podcast & Gäste Verwaltung</h1>
+
+    {% if meldung %}
+        <div class="meldung">{{ meldung }}</div>
+    {% endif %}
     
     <div class="flex-container">
         <!-- Formular: Gast hinzufügen -->
@@ -71,8 +83,12 @@
                 <label>Titel des Buches:</label>
                 <input type="text" name="titel" placeholder="Buchtitel" required>
                 
-                <label>Open Library ID (z.B. OL50534585M):</label>
-                <input type="text" name="olid" placeholder="z.B. OL50534585M">
+                <label>Open Library ID (optional):</label>
+                <input type="text" name="olid" placeholder="leer lassen = automatisch suchen">
+
+                <label>Eigene Cover-Bild-URL (optional):</label>
+                <input type="text" name="cover_url" placeholder="https://... .jpg">
+                <small class="hinweis">Leer lassen – das Cover wird anhand von Titel und Gast automatisch gesucht.</small>
 
                 <label>Amazon Reflink (*):</label>
                 <input type="text" name="link" placeholder="https://amzn.to/...">
@@ -94,6 +110,15 @@
     </div>
 
     <h2>Bibliothek</h2>
+
+    {% if ohne_cover %}
+        <div class="cover-bar">
+            <span>🖼️ {{ ohne_cover }} Bücher haben noch kein Cover.</span>
+            <form action="/covers_nachladen" method="POST" style="margin:0;" onsubmit="this.querySelector('button').innerText='Suche läuft… (kann etwas dauern)'; this.querySelector('button').disabled=true;">
+                <button type="submit" class="btn-cover">Fehlende Cover automatisch suchen</button>
+            </form>
+        </div>
+    {% endif %}
     
     {% for autor in autoren %}
         <div class="autor-block">
@@ -144,10 +169,11 @@
                             <!-- COVER-ANZEIGE ÜBER OPEN LIBRARY ID -->
                             <div class="cover-container">
                                 <a href="{{ buch['link'] if buch['link'] else '#' }}" target="_blank" class="cover-link" title="Auf Amazon ansehen *">
-                                    {% if buch['olid'] %}
-                                        <img src="https://covers.openlibrary.org/b/olid/{{ buch['olid'] }}-L.jpg" alt="{{ buch['titel'] }}" class="buch-cover">
+                                    {% if buch['cover_url'] %}
+                                        <img src="{{ buch['cover_url'] }}" alt="{{ buch['titel'] }}" class="buch-cover" loading="lazy"
+                                             onerror="this.outerHTML='<span class=&quot;kein-cover&quot;>Kein Cover gefunden</span>';">
                                     {% else %}
-                                        <span style="font-size:0.8em; color:#718096;">Kein Cover</span>
+                                        <span class="kein-cover">Kein Cover</span>
                                     {% endif %}
                                 </a>
                             </div>
@@ -158,10 +184,13 @@
                             </a>
                             
                             <div class="action-btns">
-                                <form action="/delete_buch/{{ buch['id'] }}" method="POST" style="margin: 0; width: 100%;">
+                                <form action="/delete_buch/{{ buch['id'] }}" method="POST" style="margin: 0; width: 100%;" onsubmit="return confirm('Buch wirklich löschen?');">
                                     <button type="submit" class="btn-delete" style="width: 100%;">Löschen</button>
                                 </form>
                             </div>
+                            <form action="/cover_neu/{{ buch['id'] }}" method="POST" style="margin: 0; width: 100%;">
+                                <button type="submit" class="btn-small">🔄 Cover neu suchen</button>
+                            </form>
 
                             <!-- Buch Bearbeiten -->
                             <details>
@@ -174,6 +203,13 @@
                                         <label>Open Library ID:</label>
                                         <input type="text" name="olid" value="{{ buch['olid'] if buch['olid'] else '' }}">
 
+                                        <label>Cover-Bild-URL:</label>
+                                        <input type="text" name="cover_url" value="{{ buch['cover_url'] if buch['cover_url'] else '' }}">
+
+                                        <label style="font-size:0.85em;">
+                                            <input type="checkbox" name="neu_suchen" value="1"> Cover automatisch neu suchen
+                                        </label>
+
                                         <label>Reflink:</label>
                                         <input type="text" name="link" value="{{ buch['link'] if buch['link'] else '' }}">
                                         
@@ -181,7 +217,7 @@
                                         <select name="autor_id" required>
                                             {% for a in autoren %}
                                                 <option value="{{ a['id'] }}" {% if a['id'] == buch['autor_id'] %}selected{% endif %}>
-                                                    {{ a['name'] }}
+                                                    {% if a['folge'] %}#{{ a['folge'] }} {% endif %}{{ a['name'] }}
                                                 </option>
                                             {% endfor %}
                                         </select>
