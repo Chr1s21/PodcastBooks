@@ -1,0 +1,24 @@
+{% extends "oeffentlich_basis.html" %}
+{% block titel %}Impressum – {{ seite.titel }}{% endblock %}
+{% block inhalt %}
+<article class="text rahmen">
+  <h1>Impressum</h1>
+  <h2>Angaben gemäß § 5 DDG</h2>
+  {% if impressum_fehlt %}
+  <p class="hinweis">Hier fehlen noch Name, Anschrift und E-Mail. Trag sie in <code>seite.py</code> ein und exportiere die Seite neu.</p>
+  {% endif %}
+  <p>
+    {{ seite.name }}<br>
+    {{ seite.strasse }}<br>
+    {{ seite.ort }}
+  </p>
+  <h2>Kontakt</h2>
+  <p>E-Mail: {% if seite.email %}<a href="mailto:{{ seite.email }}">{{ seite.email }}</a>{% endif %}</p>
+  <h2>Verantwortlich für den Inhalt</h2>
+  <p>{{ seite.name }}, Anschrift wie oben.</p>
+  <h2>Hinweis zu Partnerlinks</h2>
+  <p>Die Links zu Amazon sind Partnerlinks. Als Amazon-Partner verdiene ich an qualifizierten Verkäufen. Für dich ändert sich am Preis nichts.</p>
+  <h2>Haftung für Links</h2>
+  <p>Diese Seite verlinkt auf Angebote Dritter, auf deren Inhalte ich keinen Einfluss habe. Für diese Inhalte ist der jeweilige Anbieter verantwortlich.</p>
+</article>
+{% endblock %}

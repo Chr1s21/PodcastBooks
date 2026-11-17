@@ -39,12 +39,37 @@
         summary { cursor: pointer; font-size: 0.85em; color: #007BFF; text-decoration: underline; list-style: none; }
         .edit-box { background: #f0f4f8; padding: 10px; border-radius: 6px; margin-top: 8px; border: 1px solid #d0d7de; }
         
+        .cover-bar { display: flex; align-items: center; justify-content: space-between; gap: 15px; background: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .btn-cover { background-color: #007BFF; }
+        .btn-cover:hover { background-color: #0062cc; }
+        .btn-small { font-size: 11px; padding: 3px 6px; background-color: #6c757d; width: 100%; margin-top: 4px; }
+        .meldung { background: #d4edda; color: #155724; padding: 10px 15px; border-radius: 6px; margin-bottom: 20px; }
+        .hinweis { font-size: 0.8em; color: #718096; margin-top: -10px; display: block; margin-bottom: 10px; }
+        .kein-cover { font-size:0.8em; color:#718096; padding: 10px; }
+
+        .filter-box { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .chip { background: #e2e8f0; color: #4a5568; border-radius: 14px; padding: 4px 11px; font-size: 0.85em; font-weight: bold; }
+        .chip:hover { background: #cbd5e0; }
+        .chip.aktiv { background: #007BFF; color: white; }
+        .kategorie-badge { cursor: pointer; }
+        #filter-info { font-size: 0.85em; color: #718096; margin-top: 8px; }
+
+        .vorschlag-link { font-size: 0.85em; color: #28a745; font-weight: bold; text-decoration: none; margin-right: 15px; }
+        .vorschlag-link:hover { text-decoration: underline; }
+        details { display: inline-block; vertical-align: top; }
+        details[open] { display: block; }
+
         .affiliate-note { text-align: center; font-size: 0.85em; color: #666; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 15px; }
     </style>
 </head>
 <body>
 
     <h1>📚 Podcast & Gäste Verwaltung</h1>
+
+    {% if meldung %}
+        <div class="meldung">{{ meldung }}</div>
+    {% endif %}
     
     <div class="flex-container">
         <!-- Formular: Gast hinzufügen -->
@@ -71,11 +96,15 @@
                 <label>Titel des Buches:</label>
                 <input type="text" name="titel" placeholder="Buchtitel" required>
                 
-                <label>Open Library ID (z.B. OL50534585M):</label>
-                <input type="text" name="olid" placeholder="z.B. OL50534585M">
+                <label>Open Library ID (optional):</label>
+                <input type="text" name="olid" placeholder="leer lassen = automatisch suchen">
+
+                <label>Eigene Cover-Bild-URL (optional):</label>
+                <input type="text" name="cover_url" placeholder="https://... .jpg">
+                <small class="hinweis">Leer lassen – das Cover wird anhand von Titel und Gast automatisch gesucht.</small>
 
                 <label>Amazon Reflink (*):</label>
-                <input type="text" name="link" placeholder="https://amzn.to/...">
+                <input type="text" name="link" placeholder="leer lassen = Partnerlink wird automatisch erstellt">
                 
                 <label>Gast zuordnen:</label>
                 <select name="autor_id" required>
@@ -94,9 +123,32 @@
     </div>
 
     <h2>Bibliothek</h2>
+
+    <p style="margin-top:-10px;"><a href="/pruefen" style="color:#28a745; font-weight:bold;">🔎 Alle Gäste auf fehlende Bücher prüfen</a>
+       &nbsp;·&nbsp; <a href="/vorschau" target="_blank" style="font-weight:bold;">👀 Öffentliche Seite ansehen</a></p>
+
+    <div class="filter-box">
+        <input type="text" id="suche" placeholder="🔍 Gast suchen…" style="margin:0;">
+        <div class="filter-chips">
+            <button type="button" class="chip aktiv" data-kat="">Alle ({{ autoren|length }})</button>
+            {% for kat, anzahl in alle_kategorien %}
+                <button type="button" class="chip" data-kat="{{ kat }}">{{ kat }} ({{ anzahl }})</button>
+            {% endfor %}
+        </div>
+        <div id="filter-info"></div>
+    </div>
+
+    {% if ohne_cover %}
+        <div class="cover-bar">
+            <span>🖼️ {{ ohne_cover }} Bücher ohne Cover oder mit Amazon-Suchlink.</span>
+            <form action="/covers_nachladen" method="POST" style="margin:0;" onsubmit="this.querySelector('button').innerText='Suche läuft… (kann etwas dauern)'; this.querySelector('button').disabled=true;">
+                <button type="submit" class="btn-cover">Cover &amp; Partnerlinks aktualisieren</button>
+            </form>
+        </div>
+    {% endif %}
     
     {% for autor in autoren %}
-        <div class="autor-block">
+        <div class="autor-block" data-name="{{ autor['name']|lower }}" data-kategorien="{{ autor['kategorien_liste']|join('|') }}">
             <div class="autor-header">
                 <div>
                     <h2 class="autor-title" style="display:inline-block; margin-right: 10px;">
@@ -107,7 +159,7 @@
                     {% if autor['kategorien_liste'] %}
                         <div style="display: inline-flex; gap: 5px; flex-wrap: wrap;">
                             {% for kat in autor['kategorien_liste'] %}
-                                <span class="kategorie-badge">{{ kat }}</span>
+                                <span class="kategorie-badge" data-kat="{{ kat }}" title="Nach {{ kat }} filtern">{{ kat }}</span>
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -117,6 +169,8 @@
                     <button type="submit" class="btn-delete">Gast löschen</button>
                 </form>
             </div>
+
+            <a href="/vorschlaege/{{ autor['id'] }}" class="vorschlag-link">📚 Bücher vorschlagen</a>
 
             <!-- Gast Bearbeiten -->
             <details>
@@ -144,10 +198,11 @@
                             <!-- COVER-ANZEIGE ÜBER OPEN LIBRARY ID -->
                             <div class="cover-container">
                                 <a href="{{ buch['link'] if buch['link'] else '#' }}" target="_blank" class="cover-link" title="Auf Amazon ansehen *">
-                                    {% if buch['olid'] %}
-                                        <img src="https://covers.openlibrary.org/b/olid/{{ buch['olid'] }}-L.jpg" alt="{{ buch['titel'] }}" class="buch-cover">
+                                    {% if buch['cover_url'] %}
+                                        <img src="{{ buch['cover_url'] }}" alt="{{ buch['titel'] }}" class="buch-cover" loading="lazy"
+                                             onerror="this.outerHTML='<span class=&quot;kein-cover&quot;>Kein Cover gefunden</span>';">
                                     {% else %}
-                                        <span style="font-size:0.8em; color:#718096;">Kein Cover</span>
+                                        <span class="kein-cover">Kein Cover</span>
                                     {% endif %}
                                 </a>
                             </div>
@@ -158,10 +213,13 @@
                             </a>
                             
                             <div class="action-btns">
-                                <form action="/delete_buch/{{ buch['id'] }}" method="POST" style="margin: 0; width: 100%;">
+                                <form action="/delete_buch/{{ buch['id'] }}" method="POST" style="margin: 0; width: 100%;" onsubmit="return confirm('Buch wirklich löschen?');">
                                     <button type="submit" class="btn-delete" style="width: 100%;">Löschen</button>
                                 </form>
                             </div>
+                            <form action="/cover_neu/{{ buch['id'] }}" method="POST" style="margin: 0; width: 100%;">
+                                <button type="submit" class="btn-small">🔄 Cover neu suchen</button>
+                            </form>
 
                             <!-- Buch Bearbeiten -->
                             <details>
@@ -174,6 +232,13 @@
                                         <label>Open Library ID:</label>
                                         <input type="text" name="olid" value="{{ buch['olid'] if buch['olid'] else '' }}">
 
+                                        <label>Cover-Bild-URL:</label>
+                                        <input type="text" name="cover_url" value="{{ buch['cover_url'] if buch['cover_url'] else '' }}">
+
+                                        <label style="font-size:0.85em;">
+                                            <input type="checkbox" name="neu_suchen" value="1"> Cover automatisch neu suchen
+                                        </label>
+
                                         <label>Reflink:</label>
                                         <input type="text" name="link" value="{{ buch['link'] if buch['link'] else '' }}">
                                         
@@ -181,7 +246,7 @@
                                         <select name="autor_id" required>
                                             {% for a in autoren %}
                                                 <option value="{{ a['id'] }}" {% if a['id'] == buch['autor_id'] %}selected{% endif %}>
-                                                    {{ a['name'] }}
+                                                    {% if a['folge'] %}#{{ a['folge'] }} {% endif %}{{ a['name'] }}
                                                 </option>
                                             {% endfor %}
                                         </select>
@@ -204,6 +269,36 @@
     <p class="affiliate-note">
         * = Affiliate-Link / Werbelink. Wenn du über diesen Link einkaufst, unterstützen wir unseren Podcast. Für dich entstehen dabei keine Zusatzkosten.
     </p>
+
+    <script>
+        (function () {
+            const bloecke = Array.from(document.querySelectorAll('.autor-block'));
+            const chips = Array.from(document.querySelectorAll('.chip'));
+            const suche = document.getElementById('suche');
+            const info = document.getElementById('filter-info');
+            let aktiveKat = '';
+
+            function anwenden() {
+                const q = suche.value.trim().toLowerCase();
+                let sichtbar = 0;
+                bloecke.forEach(b => {
+                    const kats = b.dataset.kategorien ? b.dataset.kategorien.split('|') : [];
+                    const ok = (!aktiveKat || kats.includes(aktiveKat)) && (!q || b.dataset.name.includes(q));
+                    b.style.display = ok ? '' : 'none';
+                    if (ok) sichtbar++;
+                });
+                chips.forEach(c => c.classList.toggle('aktiv', c.dataset.kat === aktiveKat));
+                info.textContent = (aktiveKat || q) ? sichtbar + ' von ' + bloecke.length + ' Gästen' : '';
+            }
+
+            chips.forEach(c => c.addEventListener('click', () => { aktiveKat = c.dataset.kat; anwenden(); }));
+            document.querySelectorAll('.kategorie-badge').forEach(b => b.addEventListener('click', () => {
+                aktiveKat = b.dataset.kat; anwenden();
+                document.querySelector('.filter-box').scrollIntoView({ behavior: 'smooth' });
+            }));
+            suche.addEventListener('input', anwenden);
+        })();
+    </script>
 
 </body>
 </html>

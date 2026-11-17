@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titel %}{{ seite.titel }}{% endblock %}</title>
+<meta name="description" content="{{ seite.untertitel }}">
+<style>
+  :root {
+    --grund: #EEF0F4;
+    --flaeche: #FFFFFF;
+    --tinte: #1A1F3A;
+    --gedaempft: #5E6582;
+    --linie: #D5D9E3;
+    --regal: #1A1F3A;
+    --signal: #FFB800;
+    --sans: "Avenir Next", "Segoe UI Variable Display", "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+    --serif: Charter, "Bitstream Charter", "Iowan Old Style", "Sitka Text", Cambria, Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--grund); color: var(--tinte);
+    font: 400 1rem/1.5 var(--sans);
+  }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 3px; border-radius: 2px; }
+  .rahmen { max-width: 76rem; margin: 0 auto; padding: 0 1.5rem; }
+
+  .kopf { padding-top: 1.5rem; }
+  .wortmarke { font-weight: 700; letter-spacing: -0.01em; text-decoration: none; font-size: 1.05rem; }
+
+  .fuss {
+    margin-top: 5rem; padding: 2rem 0 3rem; border-top: 1px solid var(--linie);
+    color: var(--gedaempft); font-size: 0.875rem;
+  }
+  .fuss p { margin: 0 0 0.5rem; max-width: 60ch; }
+  .fuss nav { display: flex; gap: 1.25rem; margin-top: 1rem; }
+
+  .text { max-width: 42rem; padding-top: 3rem; }
+  .text code { font-size: 0.9em; }
+  .text h1 { font-size: 2.25rem; line-height: 1.15; margin: 0 0 1.5rem; letter-spacing: -0.02em; }
+  .text h2 { font-size: 1.15rem; margin: 2rem 0 0.5rem; }
+  .text p, .text li { color: var(--tinte); }
+  .text .hinweis { background: #FFF4D6; border-left: 4px solid var(--signal); padding: 0.75rem 1rem; }
+  {% block stil %}{% endblock %}
+</style>
+</head>
+<body>
+<header class="kopf rahmen">
+  <a class="wortmarke" href="{{ pfade.start }}">{{ seite.titel }}</a>
+</header>
+<main>
+{% block inhalt %}{% endblock %}
+</main>
+<footer class="fuss">
+  <div class="rahmen">
+    <p>Als Amazon-Partner verdiene ich an qualifizierten Verkäufen. Für dich ändert sich am Preis nichts.</p>
+    <p>Die Buchcover stammen von Google Books und Open Library.</p>
+    <nav aria-label="Rechtliches">
+      <a href="{{ pfade.impressum }}">Impressum</a>
+      <a href="{{ pfade.datenschutz }}">Datenschutz</a>
+    </nav>
+  </div>
+</footer>
+{% block skript %}{% endblock %}
+</body>
+</html>

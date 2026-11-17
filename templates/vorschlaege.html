@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bücher von {{ autor['name'] }}</title>
+    <style>
+        body { font-family: sans-serif; max-width: 950px; margin: 40px auto; padding: 20px; line-height: 1.5; background-color: #f4f6f9; color: #333; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .hinweis { color: #718096; font-size: 0.9em; }
+        .fehler { background: #fde2e1; color: #8a1c1c; padding: 10px 15px; border-radius: 6px; }
+        .liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        label.karte { display: flex; gap: 10px; border: 2px solid #eee; border-radius: 8px; padding: 10px; background: #fafafa; cursor: pointer; }
+        label.karte:has(input:checked) { border-color: #28a745; background: #f0fff4; }
+        label.karte.da { opacity: 0.5; cursor: default; }
+        .mini-cover { width: 55px; height: 80px; object-fit: contain; background: #e2e8f0; border-radius: 3px; flex-shrink: 0; }
+        .titel { font-weight: bold; font-size: 0.9em; }
+        .meta { font-size: 0.75em; color: #718096; }
+        button { background-color: #28a745; color: white; padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; }
+        button:hover { background-color: #218838; }
+        a { color: #007BFF; }
+    </style>
+</head>
+<body>
+    <p><a href="/">← zurück zur Bibliothek</a></p>
+    <div class="box">
+        <h2 style="margin-top:0;">📚 Bücher von {% if autor['folge'] %}#{{ autor['folge'] }} {% endif %}{{ autor['name'] }}</h2>
+        <p class="hinweis">
+            Google Books kennt diese Bücher von „{{ suchname }}“. Richtige anhaken und speichern –
+            sie bekommen automatisch Cover und Amazon-Partnerlink.
+            Achtung bei häufigen Namen: Es können Bücher von Namensvettern dabei sein.
+        </p>
+
+        {% if fehler %}
+            <p class="fehler">{{ fehler }}</p>
+        {% elif not treffer %}
+            <p>Keine Bücher gefunden – dieser Gast hat vermutlich kein eigenes Buch geschrieben.</p>
+        {% else %}
+            <form method="POST">
+                <div class="liste">
+                    {% for t in treffer %}
+                        <label class="karte {% if t.schon_da %}da{% endif %}">
+                            {% if not t.schon_da %}
+                                <input type="checkbox" name="buch" value="{{ t.isbn10 or '' }}|{{ t.cover or '' }}|{{ t.titel }}">
+                            {% endif %}
+                            {% if t.cover %}
+                                <img class="mini-cover" src="{{ t.cover }}" alt="" loading="lazy">
+                            {% else %}
+                                <span class="mini-cover"></span>
+                            {% endif %}
+                            <span>
+                                <span class="titel">{{ t.titel }}</span><br>
+                                {% if t.untertitel %}<span class="meta">{{ t.untertitel }}</span><br>{% endif %}
+                                <span class="meta">{{ t.autoren }}{% if t.jahr %} · {{ t.jahr }}{% endif %}</span>
+                                {% if t.schon_da %}<br><span class="meta">✔ schon eingetragen</span>{% endif %}
+                            </span>
+                        </label>
+                    {% endfor %}
+                </div>
+                <button type="submit">Ausgewählte Bücher hinzufügen</button>
+            </form>
+        {% endif %}
+    </div>
+</body>
+</html>
