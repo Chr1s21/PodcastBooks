@@ -39,7 +39,7 @@ BUECHER = {
     48: ["Wie wir uns täglich die Zukunft versauen", "Bright Future Business",
          "Die fünf Zukunftsbrillen", "30 Minuten Zukunftsmanagement"],              # Pero Micic
     50: ["Vegan-Klischee ade!", "Vegan-Klischee ade! Das Kochbuch", "Vegan Low Budget",
-         "Vegan ist Unsinn!", "Vegan von Anfang an"],                               # Niko Rittenau
+         "Vegan ist Unsinn!"],                               # Niko Rittenau
     52: ["Der Abenteurer"],                                                         # Fritz Meinecke
     55: ["Durchschaut", "Deal! Du gibst mir, was ich will!", "Entlarvt!",
           "Überzeugt!"],                                                            # Jack Nasher
@@ -67,7 +67,7 @@ BUECHER = {
     207: ["Das Integrationsparadox", "Mythos Bildung", "Wozu Rassismus?",
           "Misstrauensgemeinschaften", "Kinder – Minderheit ohne Schutz"],          # Aladin El-Mafaalani
     210: ["Auf der Spur des Bösen", "Im Angesicht des Bösen"],                      # Axel Petermann
-    212: ["Schattenseiten der Migration", "Darum haben Täter Erfolg"],              # Frank Urbaniok
+    212: ["Schattenseiten der Migration"],              # Frank Urbaniok
     216: ["Amerikas Oligarchen"],                                                   # Julian Heißler
     218: ["Influencer – Die Ideologie der Werbekörper"],                            # Wolfgang M. Schmitt
     219: ["Ami, it's time to go!"],                                                 # Oskar Lafontaine
@@ -138,7 +138,7 @@ RUNDE_4 = {
     160: ["Den Bach rauf"],                                                       # Robert Habeck
     162: ["Mein Leben in 13 Büchern", "Marx und wir", "Gysi vs. Sonneborn"],      # Gregor Gysi
     167: ["Teuer!"],                                                              # Maurice Höfgen
-    176: ["Next Level"],                                                          # Philip Hopf
+    176: ["Jeden Tag einen Schritt"],                                                     # Philip Hopf
     186: ["Nimm dir alles, gib viel", "Die Supermilf"],                           # Verona Pooth
     188: ["Deine Atmung ändert alles!"],                                          # Tom Sietas
     190: ["Janez"],                                                               # Janez Ekart
@@ -174,6 +174,25 @@ for _folge, _titel in RUNDE_4.items():
 # Titelkorrekturen: (Folge, alter Titel) -> neuer Titel
 UMBENENNEN = {
     (197, "Shenzhen – Die Weltwirtschaft von morgen"): "Shenzhen",                # Wolfgang Hirn
+    (10, "Bitcoin und der Gelduntergang"): "Der Bitcoin-Gelduntergang",           # Christian Rieck
+    (13, "Die Autobiografie: Startup-DNA"): "Startup-DNA",                         # Frank Thelen
+    (176, "Next Level"): "Jeden Tag einen Schritt",                                # Philip Hopf (NXT LVL = Verlag)
+}
+
+# Prüfung aller Bücher: existieren nicht oder sind nicht vom Gast -> entfernen
+LOESCHEN = {
+    2: ["Die Kamerahure"],                                                        # Marcus von Anhalt
+    10: ["Von PowerPoint zum Kraftpunkt", "Fernglas-Praxis",
+         "Theorie des rationalen Bauherrn"],                                      # Christian Rieck
+    11: ["Sozialpsychologie für Dummies"],                                        # Autor: Daniel Richardson
+    14: ["Kieleck"],                                                              # Maximilian Pollux
+    16: ["Brückenschläge"],                                                       # Christian Lindner
+    21: ["Der Paradiesjäger (Band 1)", "Der Paradiesjäger (Band 2)",
+         "Der Paradiesjäger (Band 3)"],                                           # Gangerl
+    28: ["Potzblitz"],                                                            # Sammelband anderer Hrsg.
+    29: ["Der Fairness-Faktor"],                                                  # Henning Beck
+    50: ["Vegan von Anfang an"],                                                  # Autor nicht belegt
+    212: ["Darum haben Täter Erfolg"],                                            # nicht belegt
 }
 
 
@@ -207,6 +226,17 @@ def main():
                     link = such_link(neu_titel, gast["name"])
                 conn.execute("UPDATE buecher SET titel=?, link=? WHERE id=?",
                              (neu_titel, link, b["id"]))
+
+    for folge, titel_liste in LOESCHEN.items():
+        gast = gaeste.get(folge)
+        if gast is None:
+            continue
+        weg = {_norm(t) for t in titel_liste}
+        for b in conn.execute("SELECT id, titel FROM buecher WHERE autor_id=?", (gast["id"],)).fetchall():
+            if _norm(b["titel"]) in weg:
+                print(f"  - #{folge} {gast['name']}: {b['titel']}")
+                if not probe:
+                    conn.execute("DELETE FROM buecher WHERE id=?", (b["id"],))
 
     neu = uebersprungen = 0
     for folge, titel_liste in sorted(BUECHER.items()):
