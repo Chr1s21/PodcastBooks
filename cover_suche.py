@@ -1,25 +1,51 @@
 """
 Automatische Buchcover-Suche.
 
-Reihenfolge:
+Quellen:
   1. Google Books (sehr gute Abdeckung bei deutschen Büchern)
-  2. Open Library (Fallback)
+  2. Open Library (Fallback, ohne Limit-Probleme)
 
-Jede Quelle wird erst mit Titel + Autor, dann nur mit Titel abgefragt.
-Ergebnis ist eine fertige Bild-URL (https) oder None.
+Google Books erlaubt ohne API-Schlüssel nur wenige Anfragen pro Minute.
+Optional einen kostenlosen Schlüssel als Umgebungsvariable setzen:
+    Windows (PowerShell):  $env:GOOGLE_BOOKS_API_KEY="dein-schluessel"
+    Mac/Linux:             export GOOGLE_BOOKS_API_KEY="dein-schluessel"
+Schlüssel anlegen: https://console.cloud.google.com/apis/credentials
+(vorher „Books API“ aktivieren). Damit sind ~1000 Anfragen/Tag frei.
+
+Ohne Schlüssel funktioniert alles auch – wenn Google bremst (HTTP 429),
+pausiert die Suche Google automatisch und nimmt nur noch Open Library.
+
 Benötigt keine zusätzlichen Pakete (nur Python-Standardbibliothek).
 """
 
 import json
+import os
 import re
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
 TIMEOUT = 8
 HEADERS = {"User-Agent": "PodcastBuecher/1.0 (privates Projekt)"}
+GOOGLE_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY", "").strip()
+
+# Bis zu diesem Zeitpunkt (time.time()) wird Google nicht mehr gefragt
+_google_pause_bis = 0.0
+GOOGLE_PAUSE_SEKUNDEN = 120
 
 # Titel/Präfixe, die als Autor-Suchbegriff nichts taugen
 _AUTOR_PRAEFIXE = re.compile(r"\b(Prof\.|Dr\.|med\.|Dipl\.|-Ing\.)\s*", re.IGNORECASE)
+_PART = re.compile(r"\s+Part\s+\d+\s*$", re.IGNORECASE)
+
+
+class GoogleGesperrt(Exception):
+    pass
+
+
+def google_pausiert():
+    """True, wenn Google gerade wegen zu vieler Anfragen pausiert wird."""
+    return time.time() < _google_pause_bis
 
 
 def _get_json(url):
@@ -29,10 +55,10 @@ def _get_json(url):
 
 
 def _autor_nachname(autor):
-    """'Prof. Dr. Wolfgang Schöllhorn' -> 'Schöllhorn'"""
+    """'Prof. Dr. Wolfgang Schöllhorn Part 2' -> 'Schöllhorn'"""
     if not autor:
         return None
-    sauber = _AUTOR_PRAEFIXE.sub("", autor).strip()
+    sauber = _PART.sub("", _AUTOR_PRAEFIXE.sub("", autor)).strip()
     teile = sauber.split()
     return teile[-1] if teile else None
 
@@ -45,29 +71,42 @@ def _titel_kurz(titel):
 # ---------------- Google Books ----------------
 
 def _google_cover(titel, autor=None):
+    global _google_pause_bis
+    if google_pausiert():
+        raise GoogleGesperrt()
+
     q = f'intitle:"{titel}"'
     if autor:
         q += f" inauthor:{autor}"
-    url = (
-        "https://www.googleapis.com/books/v1/volumes?"
-        + urllib.parse.urlencode({"q": q, "maxResults": 5, "printType": "books"})
-    )
-    daten = _get_json(url)
+    params = {"q": q, "maxResults": 5, "printType": "books"}
+    if GOOGLE_API_KEY:
+        params["key"] = GOOGLE_API_KEY
+    url = "https://www.googleapis.com/books/v1/volumes?" + urllib.parse.urlencode(params)
+
+    try:
+        daten = _get_json(url)
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            warte = e.headers.get("Retry-After")
+            pause = int(warte) if warte and warte.isdigit() else GOOGLE_PAUSE_SEKUNDEN
+            _google_pause_bis = time.time() + pause
+            print(f"[Cover-Suche] Google Books bremst (429) – pausiere Google für {pause}s, "
+                  f"nutze solange nur Open Library.")
+            raise GoogleGesperrt()
+        raise
+
     for item in daten.get("items", []):
         links = item.get("volumeInfo", {}).get("imageLinks", {})
         bild = links.get("thumbnail") or links.get("smallThumbnail")
         if bild:
-            bild = bild.replace("http://", "https://")
-            bild = bild.replace("&edge=curl", "")
-            # zoom=1 ist das Standard-Thumbnail; höhere Werte liefern oft kein Bild
-            return bild
+            return bild.replace("http://", "https://").replace("&edge=curl", "")
     return None
 
 
 # ---------------- Open Library ----------------
 
 def _openlibrary_cover(titel, autor=None):
-    params = {"title": titel, "limit": 5, "fields": "cover_i,cover_edition_key"}
+    params = {"title": titel, "limit": 5, "fields": "cover_i"}
     if autor:
         params["author"] = autor
     url = "https://openlibrary.org/search.json?" + urllib.parse.urlencode(params)
@@ -87,15 +126,15 @@ def cover_von_olid(olid):
 
 
 def finde_cover(titel, autor=None):
-    """Probiert alle Quellen durch und gibt die erste gefundene Cover-URL zurück."""
+    """Probiert die Quellen der Reihe nach und gibt die erste Cover-URL zurück."""
     if not titel:
         return None
     nachname = _autor_nachname(autor)
     kurz = _titel_kurz(titel)
 
+    # Max. 2 Google-Anfragen pro Buch, Rest über Open Library
     versuche = [
         (_google_cover, titel, nachname),
-        (_google_cover, kurz, nachname),
         (_openlibrary_cover, titel, nachname),
         (_google_cover, kurz, None),
         (_openlibrary_cover, kurz, None),
@@ -110,6 +149,8 @@ def finde_cover(titel, autor=None):
             url = funktion(t, a)
             if url:
                 return url
-        except Exception as e:  # Netzwerkfehler, Rate-Limit usw. -> nächste Quelle
+        except GoogleGesperrt:
+            continue  # leise überspringen, Meldung kam schon einmal
+        except Exception as e:  # Netzwerkfehler usw. -> nächste Quelle
             print(f"[Cover-Suche] {funktion.__name__}({t!r}, {a!r}) fehlgeschlagen: {e}")
     return None

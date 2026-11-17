@@ -2,7 +2,7 @@ import sqlite3
 import time
 from flask import Flask, render_template, request, redirect, url_for
 
-from cover_suche import finde_cover, cover_von_olid
+from cover_suche import finde_cover, cover_von_olid, google_pausiert
 
 app = Flask(__name__)
 
@@ -247,16 +247,22 @@ def covers_nachladen():
     ).fetchall()
 
     gefunden = 0
+    google_gebremst = False
     for b in offen:
         url = cover_von_olid(b["olid"]) if b["olid"] else finde_cover(b["titel"], b["autor"])
         if url:
             conn.execute("UPDATE buecher SET cover_url=? WHERE id=?", (url, b["id"]))
             conn.commit()
             gefunden += 1
-        time.sleep(0.3)  # APIs nicht überlasten
+        if google_pausiert():
+            google_gebremst = True
+        time.sleep(1.0)  # APIs nicht überlasten
 
     conn.close()
     meldung = f"{gefunden} von {len(offen)} Covern gefunden."
+    if google_gebremst and gefunden < len(offen):
+        meldung += (" Google Books hat zwischendurch gebremst – für die restlichen "
+                    "in ein paar Minuten nochmal auf den Button klicken.")
     return redirect(url_for("home", meldung=meldung))
 
 
