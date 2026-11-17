@@ -34,10 +34,11 @@ Die `.env` wird beim Start automatisch gelesen und nicht ins Repo hochgeladen.
 Partner-Tag: `podcastbueche-21` (änderbar über `AMAZON_PARTNER_TAG=` in der `.env`).
 
 - Neues Buch ohne Link → Partnerlink wird automatisch erstellt.
-- Findet Google Books die ISBN, wird direkt auf die Produktseite verlinkt
-  (`amazon.de/dp/ISBN?tag=…`), sonst auf die Amazon-Suche mit Tag.
-- „Cover & Partnerlinks aktualisieren“ stellt vorhandene Suchlinks auf
-  Produktlinks um. Eigene Links (z. B. `link.amazon/…`) bleiben unverändert.
+- Automatische Links führen zur Amazon-Buchsuche nach Titel + Autor
+  (`amazon.de/s?k=…&tag=…`). Direkte Produktlinks über die ISBN liefen oft ins
+  Leere, weil Amazon.de die Ausgabe aus Google Books nicht führt.
+- Willst du für ein Buch einen direkten Link, trag ihn beim Buch selbst ein
+  (z. B. per SiteStripe `link.amazon/…`). Eigene Links bleiben immer unverändert.
 - **„🔎 Alle Gäste auf fehlende Bücher prüfen“**: geht alle Gäste in 15er-Blöcken
   bei Google Books durch, zeigt pro Gast die bis zu 5 beliebtesten fehlenden Bücher.
 - Pro Gast: **„📚 Bücher vorschlagen“** listet alle Bücher, die Google Books

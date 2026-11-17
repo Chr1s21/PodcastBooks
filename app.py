@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for
 
 from cover_suche import (finde_buchdaten, cover_von_olid, buecher_von_autor,
                          google_pausiert, openlibrary_pausiert, QuelleGesperrt, _norm)
-from amazon import partner_link, dp_link, ist_suchlink, autor_sauber
+from amazon import partner_link, ist_dp_link, ist_suchlink, autor_sauber
 from seite import SEITE, oeffentliche_daten, impressum_fehlt
 
 app = Flask(__name__)
@@ -56,18 +56,16 @@ def autor_name(conn, autor_id):
 
 def ermittle_cover_und_link(conn, titel, autor_id, olid, cover_manuell, link):
     """Cover: eigene Bild-URL > Open Library ID > automatische Suche.
-    Link: eigener Link bleibt; leer oder Amazon-Suchlink -> Partnerlink
-    (direkt aufs Produkt, wenn eine ISBN gefunden wird)."""
+    Link: eigener Link bleibt; leer, Amazon-Suchlink oder /dp/-Link ->
+    Partnerlink auf die Amazon-Suche nach Titel + Autor."""
     autor = autor_name(conn, autor_id)
     link = (link or "").strip()
     cover = cover_manuell.strip() if cover_manuell else (cover_von_olid(olid) if olid else None)
 
-    braucht_suche = not cover or not link or ist_suchlink(link)
-    daten = finde_buchdaten(titel, autor) if braucht_suche else {"cover": None, "isbn10": None}
-
-    cover = cover or daten["cover"]
-    if not link or ist_suchlink(link):
-        link = partner_link(titel, autor, daten["isbn10"])
+    if not cover:
+        cover = finde_buchdaten(titel, autor)["cover"]
+    if not link or ist_suchlink(link) or ist_dp_link(link):
+        link = partner_link(titel, autor)
     return cover, link
 
 
@@ -86,7 +84,7 @@ def home():
     buecher = conn.execute("SELECT * FROM buecher").fetchall()
     ohne_cover = conn.execute(
         "SELECT COUNT(*) FROM buecher WHERE cover_url IS NULL OR cover_url='' "
-        "OR link IS NULL OR link='' OR link LIKE '%amazon.de/s?%'"
+        "OR link IS NULL OR link='' OR link LIKE '%amazon.de/dp/%'"
     ).fetchone()[0]
     conn.close()
 
@@ -284,45 +282,37 @@ def delete_buch(id):
 # ---------------- COVER & PARTNERLINKS ----------------
 
 def _buch_aktualisieren(conn, b):
-    """Fehlendes Cover suchen und Amazon-Suchlinks auf Produktlinks umstellen.
-    Gibt (cover_neu, link_neu) als bool zurück."""
+    """Fehlendes Cover suchen; fehlende oder alte /dp/-Links durch die
+    Amazon-Suche ersetzen. Gibt (cover_neu, link_neu) als bool zurück."""
     hat_cover = bool(b["cover_url"])
     link = b["link"] or ""
-    if hat_cover and link and not ist_suchlink(link):
-        return False, False
-
-    if b["olid"] and not hat_cover:
-        daten = {"cover": cover_von_olid(b["olid"]), "isbn10": None}
-        if not link or ist_suchlink(link):
-            daten["isbn10"] = finde_buchdaten(b["titel"], b["autor"])["isbn10"]
-    else:
-        daten = finde_buchdaten(b["titel"], b["autor"])
-
     cover_neu = link_neu = False
-    if not hat_cover and daten["cover"]:
-        conn.execute("UPDATE buecher SET cover_url=? WHERE id=?", (daten["cover"], b["id"]))
-        cover_neu = True
-    if daten["isbn10"] and (not link or ist_suchlink(link)):
-        conn.execute("UPDATE buecher SET link=? WHERE id=?", (dp_link(daten["isbn10"]), b["id"]))
-        link_neu = True
-    elif not link:
+
+    if not link or ist_dp_link(link):
         conn.execute("UPDATE buecher SET link=? WHERE id=?",
                      (partner_link(b["titel"], b["autor"]), b["id"]))
         link_neu = True
+
+    if not hat_cover:
+        cover = cover_von_olid(b["olid"]) if b["olid"] else None
+        cover = cover or finde_buchdaten(b["titel"], b["autor"])["cover"]
+        if cover:
+            conn.execute("UPDATE buecher SET cover_url=? WHERE id=?", (cover, b["id"]))
+            cover_neu = True
     conn.commit()
     return cover_neu, link_neu
 
 
 @app.route("/covers_nachladen", methods=["POST"])
 def covers_nachladen():
-    """Sucht fehlende Cover und macht aus Amazon-Suchlinks direkte Produktlinks."""
+    """Sucht fehlende Cover und ersetzt alte /dp/-Links durch die Amazon-Suche."""
     conn = get_db_connection()
     offen = conn.execute(
         """
         SELECT b.id, b.titel, b.olid, b.cover_url, b.link, a.name AS autor
         FROM buecher b LEFT JOIN autoren a ON a.id = b.autor_id
         WHERE b.cover_url IS NULL OR b.cover_url = ''
-           OR b.link IS NULL OR b.link = '' OR b.link LIKE '%amazon.de/s?%'
+           OR b.link IS NULL OR b.link = '' OR b.link LIKE '%amazon.de/dp/%'
         """
     ).fetchall()
 
@@ -334,7 +324,8 @@ def covers_nachladen():
         links += l
         if google_pausiert() or openlibrary_pausiert():
             gebremst = True
-        time.sleep(1.0)  # APIs nicht überlasten
+        if not b["cover_url"]:
+            time.sleep(1.0)  # nur nach einer Cover-Suche: APIs nicht überlasten
 
     conn.close()
     meldung = f"{len(offen)} Bücher geprüft: {covers} Cover gefunden, {links} Partnerlinks verbessert."

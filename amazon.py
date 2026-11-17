@@ -40,5 +40,14 @@ def ist_suchlink(url):
     return bool(url) and "amazon.de/s?" in url
 
 
+def ist_dp_link(url):
+    return bool(url) and "amazon.de/dp/" in url
+
+
 def partner_link(titel, autor=None, isbn10=None):
-    return dp_link(isbn10) if isbn10 else such_link(titel, autor)
+    """Immer die Amazon-Buchsuche nach Titel + Autor.
+
+    Direkte Produktlinks (/dp/ISBN) laufen oft ins Leere, weil die ISBN aus
+    Google Books zu einer Ausgabe gehört, die Amazon.de nicht führt. Die Suche
+    zeigt das Buch zuverlässig ganz oben; der Partner-Tag gilt trotzdem."""
+    return such_link(titel, autor)

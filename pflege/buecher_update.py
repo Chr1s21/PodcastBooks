@@ -238,6 +238,16 @@ def main():
                 if not probe:
                     conn.execute("DELETE FROM buecher WHERE id=?", (b["id"],))
 
+    # /dp/-Links laufen oft ins Leere -> Amazon-Suche nach Titel + Autor
+    umgestellt = 0
+    for b in conn.execute("SELECT b.id, b.titel, a.name FROM buecher b JOIN autoren a "
+                          "ON a.id = b.autor_id WHERE b.link LIKE '%amazon.de/dp/%'").fetchall():
+        umgestellt += 1
+        if not probe:
+            conn.execute("UPDATE buecher SET link=? WHERE id=?", (such_link(b["titel"], b["name"]), b["id"]))
+    if umgestellt:
+        print(f"  {umgestellt} Produktlinks (/dp/) auf die Amazon-Suche umgestellt")
+
     neu = uebersprungen = 0
     for folge, titel_liste in sorted(BUECHER.items()):
         gast = gaeste.get(folge)
