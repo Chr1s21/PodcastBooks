@@ -1,0 +1,3584 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podcastbücher</title>
+<meta name="description" content="Die Bücher der Gäste aus dem Tim Gabel Podcast">
+<style>
+  :root {
+    --grund: #EEF0F4;
+    --flaeche: #FFFFFF;
+    --tinte: #1A1F3A;
+    --gedaempft: #5E6582;
+    --linie: #D5D9E3;
+    --regal: #1A1F3A;
+    --signal: #FFB800;
+    --sans: "Avenir Next", "Segoe UI Variable Display", "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+    --serif: Charter, "Bitstream Charter", "Iowan Old Style", "Sitka Text", Cambria, Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--grund); color: var(--tinte);
+    font: 400 1rem/1.5 var(--sans);
+  }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--signal); outline-offset: 3px; border-radius: 2px; }
+  .rahmen { max-width: 76rem; margin: 0 auto; padding: 0 1.5rem; }
+
+  .kopf { padding-top: 1.5rem; }
+  .wortmarke { font-weight: 700; letter-spacing: -0.01em; text-decoration: none; font-size: 1.05rem; }
+
+  .fuss {
+    margin-top: 5rem; padding: 2rem 0 3rem; border-top: 1px solid var(--linie);
+    color: var(--gedaempft); font-size: 0.875rem;
+  }
+  .fuss p { margin: 0 0 0.5rem; max-width: 60ch; }
+  .fuss nav { display: flex; gap: 1.25rem; margin-top: 1rem; }
+
+  .text { max-width: 42rem; padding-top: 3rem; }
+  .text code { font-size: 0.9em; }
+  .text h1 { font-size: 2.25rem; line-height: 1.15; margin: 0 0 1.5rem; letter-spacing: -0.02em; }
+  .text h2 { font-size: 1.15rem; margin: 2rem 0 0.5rem; }
+  .text p, .text li { color: var(--tinte); }
+  .text .hinweis { background: #FFF4D6; border-left: 4px solid var(--signal); padding: 0.75rem 1rem; }
+  
+  .einstieg { padding-top: 3.5rem; padding-bottom: 2rem; }
+  .einstieg h1 {
+    font-size: clamp(2.5rem, 7vw, 5.25rem); line-height: 0.98; letter-spacing: -0.035em;
+    font-weight: 800; margin: 0; max-width: 12ch;
+  }
+  .einstieg p { font-size: 1.15rem; color: var(--gedaempft); max-width: 46ch; margin: 1.25rem 0 0; }
+
+  .werkzeug { position: sticky; top: 0; z-index: 2; background: var(--grund); padding: 1rem 0 0.75rem; }
+  .suche {
+    width: 100%; max-width: 36rem; font: inherit; font-size: 1.1rem; color: var(--tinte);
+    padding: 0.8rem 1rem; border: 2px solid var(--tinte); border-radius: 6px; background: var(--flaeche);
+  }
+  .suche::placeholder { color: #8A90A8; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.85rem; }
+  .chip {
+    font: inherit; font-size: 0.9rem; cursor: pointer; color: var(--tinte);
+    padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid var(--linie); background: var(--flaeche);
+  }
+  .chip:hover { border-color: var(--tinte); }
+  .chip[aria-pressed="true"] { background: var(--signal); border-color: var(--signal); font-weight: 600; }
+  .stand { color: var(--gedaempft); font-size: 0.9rem; margin: 0.75rem 0 0; }
+
+  .gast {
+    display: grid; grid-template-columns: 4.5rem 14rem minmax(0, 1fr); gap: 0 1.5rem;
+    align-items: end; padding: 2.75rem 0 0;
+  }
+  .folge {
+    font-size: 2.6rem; font-weight: 300; line-height: 1; color: var(--gedaempft);
+    font-variant-numeric: tabular-nums; text-align: right; padding-bottom: 1.1rem;
+  }
+  .folge span { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.2rem; }
+  .person { padding-bottom: 1.1rem; }
+  .person h2 { font-size: 1.25rem; line-height: 1.2; margin: 0 0 0.3rem; letter-spacing: -0.01em; }
+  .person p { margin: 0; color: var(--gedaempft); font-size: 0.9rem; }
+
+  .regal {
+    display: flex; align-items: flex-end; gap: 0.9rem; overflow-x: auto;
+    padding: 0.5rem 0.75rem 0; border-bottom: 10px solid var(--regal);
+    box-shadow: 0 12px 10px -10px rgba(26, 31, 58, 0.35);
+    scrollbar-width: thin;
+  }
+  .buch { flex: 0 0 auto; display: block; text-decoration: none; transform-origin: bottom center; }
+  .buch img, .ersatz {
+    display: block; height: 9.5rem; width: auto; max-width: 8rem; min-width: 5.5rem;
+    box-shadow: 2px 0 0 rgba(0,0,0,0.08), 0 1px 3px rgba(26,31,58,0.25);
+  }
+  .buch img { object-fit: cover; background: #fff; }
+  .ersatz {
+    width: 6.4rem; color: #fff; padding: 0.7rem 0.6rem; overflow: hidden;
+    font: 600 0.82rem/1.25 var(--serif); hyphens: auto; -webkit-hyphens: auto;
+    border-left: 5px solid rgba(255,255,255,0.18);
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;
+  }
+  .buch:hover { transform: translateY(-4px); }
+  .buch:focus-visible { outline-offset: 4px; }
+  @media (prefers-reduced-motion: no-preference) { .buch { transition: transform 120ms ease-out; } }
+
+  .leer { padding: 3rem 0; font-size: 1.1rem; }
+  .leer button { font: inherit; background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; color: inherit; }
+
+  @media (max-width: 760px) {
+    .gast { grid-template-columns: auto minmax(0, 1fr); gap: 0 0.9rem; padding-top: 2.25rem; }
+    .folge { font-size: 1.6rem; padding-bottom: 0.75rem; align-self: end; }
+    .person { padding-bottom: 0.75rem; }
+    .regal { grid-column: 1 / -1; margin: 0 -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem; }
+    .buch img, .ersatz { height: 8.25rem; }
+    .ersatz { width: 5.6rem; -webkit-line-clamp: 5; }
+    .chips { flex-wrap: nowrap; overflow-x: auto; margin-left: -1.5rem; margin-right: -1.5rem;
+             padding: 0 1.5rem 0.25rem; scrollbar-width: none; }
+    .chip { flex: 0 0 auto; }
+    .einstieg { padding-top: 2.5rem; padding-bottom: 1rem; }
+  }
+
+</style>
+</head>
+<body>
+<header class="kopf rahmen">
+  <a class="wortmarke" href="./">Podcastbücher</a>
+</header>
+<main>
+
+<section class="einstieg rahmen">
+  <h1>Die Bücher der Gäste</h1>
+  <p>276 Bücher, geschrieben von 107 Gästen des Tim Gabel Podcast. Ein Klick aufs Cover führt zum Buch bei Amazon.</p>
+</section>
+
+<div class="werkzeug">
+  <div class="rahmen">
+    <label for="suche" class="unsichtbar" style="position:absolute;left:-9999px">Suchen</label>
+    <input id="suche" class="suche" type="search" autocomplete="off"
+           placeholder="Gast, Buchtitel oder Thema suchen">
+    <div class="chips" role="group" aria-label="Nach Bereich filtern">
+      <button class="chip" type="button" data-kat="" aria-pressed="true">Alle</button>
+      
+      <button class="chip" type="button" data-kat="Influencer" aria-pressed="false">Influencer</button>
+      
+      <button class="chip" type="button" data-kat="Wissenschaftler" aria-pressed="false">Wissenschaftler</button>
+      
+      <button class="chip" type="button" data-kat="Unternehmer" aria-pressed="false">Unternehmer</button>
+      
+      <button class="chip" type="button" data-kat="Arzt" aria-pressed="false">Arzt</button>
+      
+      <button class="chip" type="button" data-kat="Journalist" aria-pressed="false">Journalist</button>
+      
+      <button class="chip" type="button" data-kat="Sportler" aria-pressed="false">Sportler</button>
+      
+      <button class="chip" type="button" data-kat="Ex-Krimineller" aria-pressed="false">Ex-Krimineller</button>
+      
+      <button class="chip" type="button" data-kat="Politiker" aria-pressed="false">Politiker</button>
+      
+      <button class="chip" type="button" data-kat="Sicherheit &amp; Militär" aria-pressed="false">Sicherheit &amp; Militär</button>
+      
+      <button class="chip" type="button" data-kat="Autor" aria-pressed="false">Autor</button>
+      
+      <button class="chip" type="button" data-kat="Entertainer" aria-pressed="false">Entertainer</button>
+      
+      <button class="chip" type="button" data-kat="Abenteurer" aria-pressed="false">Abenteurer</button>
+      
+      <button class="chip" type="button" data-kat="Aktivist" aria-pressed="false">Aktivist</button>
+      
+      <button class="chip" type="button" data-kat="Musiker" aria-pressed="false">Musiker</button>
+      
+      <button class="chip" type="button" data-kat="Jurist" aria-pressed="false">Jurist</button>
+      
+    </div>
+    <p class="stand" id="stand" aria-live="polite">107 Gäste</p>
+  </div>
+</div>
+
+<section class="rahmen" id="liste">
+  
+  <article class="gast" data-such="dr. andreas fulda wissenschaftler the struggle for democracy in mainland china, taiwan and hong kong" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>262</div>
+    <div class="person">
+      <h2>Dr. Andreas Fulda</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/0367334909?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="The Struggle for Democracy in Mainland China, Taiwan and Hong Kong" aria-label="The Struggle for Democracy in Mainland China, Taiwan and Hong Kong von Dr. Andreas Fulda bei Amazon ansehen">
+        
+        <img src="covers/192.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;The Struggle for Democracy in Mainland China, Taiwan and Hong Kong&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="tim vollert influencer wissenschaftler mit physik auf der suche nach dem sinn des lebens mit physik auf der suche nach der zukunft der menschheit" data-kats="Influencer|Wissenschaftler">
+    <div class="folge"><span>Folge</span>257</div>
+    <div class="person">
+      <h2>Tim Vollert</h2>
+      <p>Influencer, Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3423447095?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mit Physik auf der Suche nach dem Sinn des Lebens" aria-label="Mit Physik auf der Suche nach dem Sinn des Lebens von Tim Vollert bei Amazon ansehen">
+        
+        <img src="covers/295.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mit Physik auf der Suche nach dem Sinn des Lebens&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3423452048?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mit Physik auf der Suche nach der Zukunft der Menschheit" aria-label="Mit Physik auf der Suche nach der Zukunft der Menschheit von Tim Vollert bei Amazon ansehen">
+        
+        <img src="covers/296.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mit Physik auf der Suche nach der Zukunft der Menschheit&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="marc elsberg autor blackout zero helix gier °c – celsius" data-kats="Autor">
+    <div class="folge"><span>Folge</span>255</div>
+    <div class="person">
+      <h2>Marc Elsberg</h2>
+      <p>Autor</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641074312?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Blackout" aria-label="Blackout von Marc Elsberg bei Amazon ansehen">
+        
+        <img src="covers/187.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Blackout&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3764504927?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Zero" aria-label="Zero von Marc Elsberg bei Amazon ansehen">
+        
+        <img src="covers/188.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Zero&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3948095515?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Helix" aria-label="Helix von Marc Elsberg bei Amazon ansehen">
+        
+        <img src="covers/189.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Helix&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/364121517X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Gier" aria-label="Gier von Marc Elsberg bei Amazon ansehen">
+        
+        <img src="covers/190.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Gier&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641215188?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="°C – Celsius" aria-label="°C – Celsius von Marc Elsberg bei Amazon ansehen">
+        
+        <img src="covers/191.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;\u00b0C \u2013 Celsius&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. gilda giebel wissenschaftler autor triebhaft – zwischen narzissten, sadisten und psychopathen" data-kats="Wissenschaftler|Autor">
+    <div class="folge"><span>Folge</span>254</div>
+    <div class="person">
+      <h2>Dr. Gilda Giebel</h2>
+      <p>Wissenschaftler, Autor</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3745325249?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Triebhaft – Zwischen Narzissten, Sadisten und Psychopathen" aria-label="Triebhaft – Zwischen Narzissten, Sadisten und Psychopathen von Dr. Gilda Giebel bei Amazon ansehen">
+        
+        <img src="covers/186.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Triebhaft \u2013 Zwischen Narzissten, Sadisten und Psychopathen&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. luisa werner arzt influencer darm gut, alles gut" data-kats="Arzt|Influencer">
+    <div class="folge"><span>Folge</span>253</div>
+    <div class="person">
+      <h2>Dr. Luisa Werner</h2>
+      <p>Arzt, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/368936163X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Darm gut, alles gut" aria-label="Darm gut, alles gut von Dr. Luisa Werner bei Amazon ansehen">
+        
+        <img src="covers/294.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Darm gut, alles gut&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="serdar somuncu entertainer der adolf in mir" data-kats="Entertainer">
+    <div class="folge"><span>Folge</span>251</div>
+    <div class="person">
+      <h2>Serdar Somuncu</h2>
+      <p>Entertainer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3942454173?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der Adolf in mir" aria-label="Der Adolf in mir von Serdar Somuncu bei Amazon ansehen">
+        
+        <img src="covers/211.png" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Adolf in mir&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="boris bondarew politiker im ministerium der lügen" data-kats="Politiker">
+    <div class="folge"><span>Folge</span>249</div>
+    <div class="person">
+      <h2>Boris Bondarew</h2>
+      <p>Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/345321871X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Im Ministerium der Lügen" aria-label="Im Ministerium der Lügen von Boris Bondarew bei Amazon ansehen">
+        
+        <img src="covers/293.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Im Ministerium der L\u00fcgen&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="timon krause entertainer du bist mentalist! kennen wir uns? 99 mind hacks sei deiner zeit voraus" data-kats="Entertainer">
+    <div class="folge"><span>Folge</span>248</div>
+    <div class="person">
+      <h2>Timon Krause</h2>
+      <p>Entertainer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593439352?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Du bist Mentalist!" aria-label="Du bist Mentalist! von Timon Krause bei Amazon ansehen">
+        
+        <img src="covers/207.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Du bist Mentalist!&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593512637?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Kennen wir uns?" aria-label="Kennen wir uns? von Timon Krause bei Amazon ansehen">
+        
+        <img src="covers/208.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kennen wir uns?&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644025649?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="99 Mind Hacks" aria-label="99 Mind Hacks von Timon Krause bei Amazon ansehen">
+        
+        <img src="covers/209.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;99 Mind Hacks&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644019681?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Sei deiner Zeit voraus" aria-label="Sei deiner Zeit voraus von Timon Krause bei Amazon ansehen">
+        
+        <img src="covers/210.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Sei deiner Zeit voraus&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="gerhard schindler sicherheit &amp; militär wer hat angst vorm bnd?" data-kats="Sicherheit &amp; Militär">
+    <div class="folge"><span>Folge</span>247</div>
+    <div class="person">
+      <h2>Gerhard Schindler</h2>
+      <p>Sicherheit &amp; Militär</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3430210380?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Wer hat Angst vorm BND?" aria-label="Wer hat Angst vorm BND? von Gerhard Schindler bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #58463F">Wer hat Angst vorm BND?</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="liv von boetticher journalist die akte tengelmann wir verlieren dieses land" data-kats="Journalist">
+    <div class="folge"><span>Folge</span>245</div>
+    <div class="person">
+      <h2>Liv von Boetticher</h2>
+      <p>Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3986093559?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Akte Tengelmann" aria-label="Die Akte Tengelmann von Liv von Boetticher bei Amazon ansehen">
+        
+        <img src="covers/291.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Akte Tengelmann&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3690662567?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Wir verlieren dieses Land" aria-label="Wir verlieren dieses Land von Liv von Boetticher bei Amazon ansehen">
+        
+        <img src="covers/292.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Wir verlieren dieses Land&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. rüdiger frank wissenschaftler unterwegs in nordkorea nordkorea – innenansichten eines totalen staates" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>244</div>
+    <div class="person">
+      <h2>Dr. Rüdiger Frank</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641203902?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Unterwegs in Nordkorea" aria-label="Unterwegs in Nordkorea von Dr. Rüdiger Frank bei Amazon ansehen">
+        
+        <img src="covers/183.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Unterwegs in Nordkorea&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/364113966X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Nordkorea – Innenansichten eines totalen Staates" aria-label="Nordkorea – Innenansichten eines totalen Staates von Dr. Rüdiger Frank bei Amazon ansehen">
+        
+        <img src="covers/184.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Nordkorea \u2013 Innenansichten eines totalen Staates&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="manuellsen musiker könig im schatten" data-kats="Musiker">
+    <div class="folge"><span>Folge</span>243</div>
+    <div class="person">
+      <h2>Manuellsen</h2>
+      <p>Musiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426462001?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="König im Schatten" aria-label="König im Schatten von Manuellsen bei Amazon ansehen">
+        
+        <img src="covers/290.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;K\u00f6nig im Schatten&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. manfred spitzer arzt wissenschaftler digitale demenz cyberkrank! einsamkeit die smartphone-epidemie lernen" data-kats="Arzt|Wissenschaftler">
+    <div class="folge"><span>Folge</span>239</div>
+    <div class="person">
+      <h2>Prof. Dr. Manfred Spitzer</h2>
+      <p>Arzt, Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426423723?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Digitale Demenz" aria-label="Digitale Demenz von Prof. Dr. Manfred Spitzer bei Amazon ansehen">
+        
+        <img src="covers/179.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Digitale Demenz&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426301040?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Cyberkrank!" aria-label="Cyberkrank! von Prof. Dr. Manfred Spitzer bei Amazon ansehen">
+        
+        <img src="covers/180.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Cyberkrank!&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426276763?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Einsamkeit" aria-label="Einsamkeit von Prof. Dr. Manfred Spitzer bei Amazon ansehen">
+        
+        <img src="covers/181.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Einsamkeit&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3608115056?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Smartphone-Epidemie" aria-label="Die Smartphone-Epidemie von Prof. Dr. Manfred Spitzer bei Amazon ansehen">
+        
+        <img src="covers/182.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Smartphone-Epidemie&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3827413966?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Lernen" aria-label="Lernen von Prof. Dr. Manfred Spitzer bei Amazon ansehen">
+        
+        <img src="covers/206.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Lernen&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="susanne wendel autor wissenschaftler heute komme ich zuerst gesundgevögelt life changing sex" data-kats="Autor|Wissenschaftler">
+    <div class="folge"><span>Folge</span>238</div>
+    <div class="person">
+      <h2>Susanne Wendel</h2>
+      <p>Autor, Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3990600958?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Heute komme ich zuerst" aria-label="Heute komme ich zuerst von Susanne Wendel bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #5B4A2E">Heute komme ich zuerst</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3990600001?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Gesundgevögelt" aria-label="Gesundgevögelt von Susanne Wendel bei Amazon ansehen">
+        
+        <img src="covers/288.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Gesundgev\u00f6gelt&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/1477675035?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Life Changing Sex" aria-label="Life Changing Sex von Susanne Wendel bei Amazon ansehen">
+        
+        <img src="covers/289.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Life Changing Sex&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="finanzfluss unternehmer influencer das einzige buch, das du über finanzen lesen solltest" data-kats="Unternehmer|Influencer">
+    <div class="folge"><span>Folge</span>236</div>
+    <div class="person">
+      <h2>Finanzfluss</h2>
+      <p>Unternehmer, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/384372556X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Das einzige Buch, das Du über Finanzen lesen solltest" aria-label="Das einzige Buch, das Du über Finanzen lesen solltest von Finanzfluss bei Amazon ansehen">
+        
+        <img src="covers/286.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Das einzige Buch, das Du \u00fcber Finanzen lesen solltest&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="$ick ex-krimineller autor shore, stein, papier räuberpistolen" data-kats="Ex-Krimineller|Autor">
+    <div class="folge"><span>Folge</span>234</div>
+    <div class="person">
+      <h2>$ick</h2>
+      <p>Ex-Krimineller, Autor</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3492060404?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Shore, Stein, Papier" aria-label="Shore, Stein, Papier von $ick bei Amazon ansehen">
+        
+        <img src="covers/178.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Shore, Stein, Papier&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3492609953?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Räuberpistolen" aria-label="Räuberpistolen von $ick bei Amazon ansehen">
+        
+        <img src="covers/285.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;R\u00e4uberpistolen&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="sacha wenk sportler influencer shaolin life" data-kats="Sportler|Influencer">
+    <div class="folge"><span>Folge</span>230</div>
+    <div class="person">
+      <h2>Sacha Wenk</h2>
+      <p>Sportler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641341434?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Shaolin Life" aria-label="Shaolin Life von Sacha Wenk bei Amazon ansehen">
+        
+        <img src="covers/177.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Shaolin Life&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="christian solmecke jurist influencer der taschenanwalt das einzige buch über recht, das du lesen musst welches recht gilt bei mord im weltraum? wtf?! so tickt das netz recht im online-marketing" data-kats="Jurist|Influencer">
+    <div class="folge"><span>Folge</span>228</div>
+    <div class="person">
+      <h2>Christian Solmecke</h2>
+      <p>Jurist, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/396905107X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der Taschenanwalt" aria-label="Der Taschenanwalt von Christian Solmecke bei Amazon ansehen">
+        
+        <img src="covers/280.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Taschenanwalt&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/s?k=Das+einzige+Buch+%C3%BCber+Recht%2C+das+du+lesen+musst+Christian+Solmecke&amp;i=stripbooks&amp;tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Das einzige Buch über Recht, das du lesen musst" aria-label="Das einzige Buch über Recht, das du lesen musst von Christian Solmecke bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #2B3A67">Das einzige Buch über Recht, das du lesen musst</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3969052297?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Welches Recht gilt bei Mord im Weltraum?" aria-label="Welches Recht gilt bei Mord im Weltraum? von Christian Solmecke bei Amazon ansehen">
+        
+        <img src="covers/282.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Welches Recht gilt bei Mord im Weltraum?&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/340160600X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="WTF?! So tickt das Netz" aria-label="WTF?! So tickt das Netz von Christian Solmecke bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #4A4E69">WTF?! So tickt das Netz</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/383626045X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Recht im Online-Marketing" aria-label="Recht im Online-Marketing von Christian Solmecke bei Amazon ansehen">
+        
+        <img src="covers/284.png" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Recht im Online-Marketing&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. martin andree wissenschaftler big tech muss weg! atlas der digitalen welt krieg der medien" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>227</div>
+    <div class="person">
+      <h2>Prof. Dr. Martin Andree</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/359351754X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Big Tech muss weg!" aria-label="Big Tech muss weg! von Prof. Dr. Martin Andree bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #6B3B3B">Big Tech muss weg!</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593512718?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Atlas der digitalen Welt" aria-label="Atlas der digitalen Welt von Prof. Dr. Martin Andree bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #5B4A2E">Atlas der digitalen Welt</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593520982?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Krieg der Medien" aria-label="Krieg der Medien von Prof. Dr. Martin Andree bei Amazon ansehen">
+        
+        <img src="covers/279.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Krieg der Medien&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. werner bartens arzt journalist das ärztehasserbuch empathie körperglück was paare zusammenhält emotionale gewalt" data-kats="Arzt|Journalist">
+    <div class="folge"><span>Folge</span>222</div>
+    <div class="person">
+      <h2>Dr. Werner Bartens</h2>
+      <p>Arzt, Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426555476?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Das Ärztehasserbuch" aria-label="Das Ärztehasserbuch von Dr. Werner Bartens bei Amazon ansehen">
+        
+        <img src="covers/173.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Das \u00c4rztehasserbuch&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426427133?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Empathie" aria-label="Empathie von Dr. Werner Bartens bei Amazon ansehen">
+        
+        <img src="covers/174.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Empathie&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3828942172?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Körperglück" aria-label="Körperglück von Dr. Werner Bartens bei Amazon ansehen">
+        
+        <img src="covers/276.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;K\u00f6rpergl\u00fcck&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426419033?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Was Paare zusammenhält" aria-label="Was Paare zusammenhält von Dr. Werner Bartens bei Amazon ansehen">
+        
+        <img src="covers/277.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Was Paare zusammenh\u00e4lt&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644100489?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Emotionale Gewalt" aria-label="Emotionale Gewalt von Dr. Werner Bartens bei Amazon ansehen">
+        
+        <img src="covers/278.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Emotionale Gewalt&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="oskar lafontaine politiker ami, it&#39;s time to go! das herz schlägt links die wut wächst" data-kats="Politiker">
+    <div class="folge"><span>Folge</span>219</div>
+    <div class="person">
+      <h2>Oskar Lafontaine</h2>
+      <p>Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/s?k=Ami%2C+it%27s+time+to+go%21+Oskar+Lafontaine&amp;i=stripbooks&amp;tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Ami, it&#39;s time to go!" aria-label="Ami, it&#39;s time to go! von Oskar Lafontaine bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #4A4E69">Ami, it&#39;s time to go!</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3430159474?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Das Herz schlägt links" aria-label="Das Herz schlägt links von Oskar Lafontaine bei Amazon ansehen">
+        
+        <img src="covers/274.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Das Herz schl\u00e4gt links&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3939816396?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Wut wächst" aria-label="Die Wut wächst von Oskar Lafontaine bei Amazon ansehen">
+        
+        <img src="covers/275.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Wut w\u00e4chst&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="wolfgang m. schmitt influencer journalist influencer – die ideologie der werbekörper die kleinen holzdiebe und das rätsel des juggernaut" data-kats="Influencer|Journalist">
+    <div class="folge"><span>Folge</span>218</div>
+    <div class="person">
+      <h2>Wolfgang M. Schmitt</h2>
+      <p>Influencer, Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3742507818?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Influencer – Die Ideologie der Werbekörper" aria-label="Influencer – Die Ideologie der Werbekörper von Wolfgang M. Schmitt bei Amazon ansehen">
+        
+        <img src="covers/171.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Influencer \u2013 Die Ideologie der Werbek\u00f6rper&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3458781781?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die kleinen Holzdiebe und das Rätsel des Juggernaut" aria-label="Die kleinen Holzdiebe und das Rätsel des Juggernaut von Wolfgang M. Schmitt bei Amazon ansehen">
+        
+        <img src="covers/273.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die kleinen Holzdiebe und das R\u00e4tsel des Juggernaut&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="julian heißler journalist amerikas oligarchen" data-kats="Journalist">
+    <div class="folge"><span>Folge</span>216</div>
+    <div class="person">
+      <h2>Julian Heißler</h2>
+      <p>Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3492611788?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Amerikas Oligarchen" aria-label="Amerikas Oligarchen von Julian Heißler bei Amazon ansehen">
+        
+        <img src="covers/170.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Amerikas Oligarchen&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="gerald groß sicherheit &amp; militär titan. (d)ein weg ins cockpit" data-kats="Sicherheit &amp; Militär">
+    <div class="folge"><span>Folge</span>215</div>
+    <div class="person">
+      <h2>Gerald Groß</h2>
+      <p>Sicherheit &amp; Militär</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/s?k=TITAN.+%28D%29ein+Weg+ins+Cockpit+Gerald+Gro%C3%9F&amp;i=stripbooks&amp;tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="TITAN. (D)ein Weg ins Cockpit" aria-label="TITAN. (D)ein Weg ins Cockpit von Gerald Groß bei Amazon ansehen">
+        
+        <img src="covers/272.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;TITAN. (D)ein Weg ins Cockpit&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. frank urbaniok arzt wissenschaftler schattenseiten der migration" data-kats="Arzt|Wissenschaftler">
+    <div class="folge"><span>Folge</span>212</div>
+    <div class="person">
+      <h2>Prof. Dr. Frank Urbaniok</h2>
+      <p>Arzt, Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3907442520?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Schattenseiten der Migration" aria-label="Schattenseiten der Migration von Prof. Dr. Frank Urbaniok bei Amazon ansehen">
+        
+        <img src="covers/168.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Schattenseiten der Migration&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="axel petermann sicherheit &amp; militär auf der spur des bösen im angesicht des bösen der profiler im auftrag der toten die psyche des bösen" data-kats="Sicherheit &amp; Militär">
+    <div class="folge"><span>Folge</span>210</div>
+    <div class="person">
+      <h2>Axel Petermann</h2>
+      <p>Sicherheit &amp; Militär</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3548920209?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Auf der Spur des Bösen" aria-label="Auf der Spur des Bösen von Axel Petermann bei Amazon ansehen">
+        
+        <img src="covers/166.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Auf der Spur des B\u00f6sen&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/364430761X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Im Angesicht des Bösen" aria-label="Im Angesicht des Bösen von Axel Petermann bei Amazon ansehen">
+        
+        <img src="covers/167.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Im Angesicht des B\u00f6sen&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641161673?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der Profiler" aria-label="Der Profiler von Axel Petermann bei Amazon ansehen">
+        
+        <img src="covers/269.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Profiler&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641273315?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Im Auftrag der Toten" aria-label="Im Auftrag der Toten von Axel Petermann bei Amazon ansehen">
+        
+        <img src="covers/270.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Im Auftrag der Toten&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/364131514X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Psyche des Bösen" aria-label="Die Psyche des Bösen von Axel Petermann bei Amazon ansehen">
+        
+        <img src="covers/271.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Psyche des B\u00f6sen&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. aladin el-mafaalani wissenschaftler das integrationsparadox mythos bildung wozu rassismus? misstrauensgemeinschaften kinder – minderheit ohne schutz" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>207</div>
+    <div class="person">
+      <h2>Prof. Dr. Aladin El-Mafaalani</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3462318691?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Das Integrationsparadox" aria-label="Das Integrationsparadox von Prof. Dr. Aladin El-Mafaalani bei Amazon ansehen">
+        
+        <img src="covers/161.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Das Integrationsparadox&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/346232053X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mythos Bildung" aria-label="Mythos Bildung von Prof. Dr. Aladin El-Mafaalani bei Amazon ansehen">
+        
+        <img src="covers/162.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mythos Bildung&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3462303899?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Wozu Rassismus?" aria-label="Wozu Rassismus? von Prof. Dr. Aladin El-Mafaalani bei Amazon ansehen">
+        
+        <img src="covers/163.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Wozu Rassismus?&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3462314548?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Misstrauensgemeinschaften" aria-label="Misstrauensgemeinschaften von Prof. Dr. Aladin El-Mafaalani bei Amazon ansehen">
+        
+        <img src="covers/164.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Misstrauensgemeinschaften&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3462313134?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Kinder – Minderheit ohne Schutz" aria-label="Kinder – Minderheit ohne Schutz von Prof. Dr. Aladin El-Mafaalani bei Amazon ansehen">
+        
+        <img src="covers/165.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kinder \u2013 Minderheit ohne Schutz&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="clemens clausen sicherheit &amp; militär lerne leiden ohne zu klagen" data-kats="Sicherheit &amp; Militär">
+    <div class="folge"><span>Folge</span>206</div>
+    <div class="person">
+      <h2>Clemens Clausen</h2>
+      <p>Sicherheit &amp; Militär</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/376932367X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Lerne leiden ohne zu klagen" aria-label="Lerne leiden ohne zu klagen von Clemens Clausen bei Amazon ansehen">
+        
+        <img src="covers/160.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Lerne leiden ohne zu klagen&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="robin alexander journalist die getriebenen machtverfall letzte chance" data-kats="Journalist">
+    <div class="folge"><span>Folge</span>205</div>
+    <div class="person">
+      <h2>Robin Alexander</h2>
+      <p>Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3328102906?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Getriebenen" aria-label="Die Getriebenen von Robin Alexander bei Amazon ansehen">
+        
+        <img src="covers/157.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Getriebenen&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641275393?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Machtverfall" aria-label="Machtverfall von Robin Alexander bei Amazon ansehen">
+        
+        <img src="covers/158.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Machtverfall&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641330971?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Letzte Chance" aria-label="Letzte Chance von Robin Alexander bei Amazon ansehen">
+        
+        <img src="covers/159.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Letzte Chance&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. thomas weber wissenschaftler hitlers erster krieg wie adolf hitler zum nazi wurde" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>203</div>
+    <div class="person">
+      <h2>Prof. Dr. Thomas Weber</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3838902815?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Hitlers erster Krieg" aria-label="Hitlers erster Krieg von Prof. Dr. Thomas Weber bei Amazon ansehen">
+        
+        <img src="covers/155.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Hitlers erster Krieg&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/s?k=Wie+Adolf+Hitler+zum+Nazi+wurde+Thomas+Weber&amp;i=stripbooks&amp;tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Wie Adolf Hitler zum Nazi wurde" aria-label="Wie Adolf Hitler zum Nazi wurde von Prof. Dr. Thomas Weber bei Amazon ansehen">
+        
+        <img src="covers/156.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Wie Adolf Hitler zum Nazi wurde&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. julia shaw wissenschaftler das trügerische gedächtnis böse bi green crime" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>201</div>
+    <div class="person">
+      <h2>Dr. Julia Shaw</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3446448926?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Das trügerische Gedächtnis" aria-label="Das trügerische Gedächtnis von Dr. Julia Shaw bei Amazon ansehen">
+        
+        <img src="covers/151.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Das tr\u00fcgerische Ged\u00e4chtnis&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3446260293?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Böse" aria-label="Böse von Dr. Julia Shaw bei Amazon ansehen">
+        
+        <img src="covers/152.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;B\u00f6se&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3446272933?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Bi" aria-label="Bi von Dr. Julia Shaw bei Amazon ansehen">
+        
+        <img src="covers/153.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Bi&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/355020258X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Green Crime" aria-label="Green Crime von Dr. Julia Shaw bei Amazon ansehen">
+        
+        <img src="covers/154.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Green Crime&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="fedor holz sportler unternehmer all in" data-kats="Sportler|Unternehmer">
+    <div class="folge"><span>Folge</span>198</div>
+    <div class="person">
+      <h2>Fedor Holz</h2>
+      <p>Sportler, Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641335450?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="All in" aria-label="All in von Fedor Holz bei Amazon ansehen">
+        
+        <img src="covers/268.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;All in&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="wolfgang hirn journalist chinas bosse shenzhen der tech-krieg herausforderung china" data-kats="Journalist">
+    <div class="folge"><span>Folge</span>197</div>
+    <div class="person">
+      <h2>Wolfgang Hirn</h2>
+      <p>Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593438070?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Chinas Bosse" aria-label="Chinas Bosse von Wolfgang Hirn bei Amazon ansehen">
+        
+        <img src="covers/149.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Chinas Bosse&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593443724?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Shenzhen" aria-label="Shenzhen von Wolfgang Hirn bei Amazon ansehen">
+        
+        <img src="covers/150.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Shenzhen&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593457172?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der Tech-Krieg" aria-label="Der Tech-Krieg von Wolfgang Hirn bei Amazon ansehen">
+        
+        <img src="covers/266.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Tech-Krieg&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3100304098?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Herausforderung China" aria-label="Herausforderung China von Wolfgang Hirn bei Amazon ansehen">
+        
+        <img src="covers/267.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Herausforderung China&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. daniele ganser wissenschaftler illegale kriege nato-geheimarmeen in europa imperium usa europa im erdölrausch kampf der giganten" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>195</div>
+    <div class="person">
+      <h2>Dr. Daniele Ganser</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3987910143?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Illegale Kriege" aria-label="Illegale Kriege von Dr. Daniele Ganser bei Amazon ansehen">
+        
+        <img src="covers/146.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Illegale Kriege&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3864898838?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="NATO-Geheimarmeen in Europa" aria-label="NATO-Geheimarmeen in Europa von Dr. Daniele Ganser bei Amazon ansehen">
+        
+        <img src="covers/147.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;NATO-Geheimarmeen in Europa&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3987910151?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Imperium USA" aria-label="Imperium USA von Dr. Daniele Ganser bei Amazon ansehen">
+        
+        <img src="covers/148.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Imperium USA&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3280054745?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Europa im Erdölrausch" aria-label="Europa im Erdölrausch von Dr. Daniele Ganser bei Amazon ansehen">
+        
+        <img src="covers/264.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Europa im Erd\u00f6lrausch&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3987911662?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Kampf der Giganten" aria-label="Kampf der Giganten von Dr. Daniele Ganser bei Amazon ansehen">
+        
+        <img src="covers/265.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kampf der Giganten&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. rainer thomasius arzt wissenschaftler wenn jugendliche trinken" data-kats="Arzt|Wissenschaftler">
+    <div class="folge"><span>Folge</span>193</div>
+    <div class="person">
+      <h2>Prof. Dr. Rainer Thomasius</h2>
+      <p>Arzt, Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3830435215?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Wenn Jugendliche trinken" aria-label="Wenn Jugendliche trinken von Prof. Dr. Rainer Thomasius bei Amazon ansehen">
+        
+        <img src="covers/263.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Wenn Jugendliche trinken&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="janez ekart ex-krimineller janez" data-kats="Ex-Krimineller">
+    <div class="folge"><span>Folge</span>190</div>
+    <div class="person">
+      <h2>Janez Ekart</h2>
+      <p>Ex-Krimineller</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3753478679?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Janez" aria-label="Janez von Janez Ekart bei Amazon ansehen">
+        
+        <img src="covers/262.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Janez&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="tom sietas sportler deine atmung ändert alles!" data-kats="Sportler">
+    <div class="folge"><span>Folge</span>188</div>
+    <div class="person">
+      <h2>Tom Sietas</h2>
+      <p>Sportler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3689360889?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Deine Atmung ändert alles!" aria-label="Deine Atmung ändert alles! von Tom Sietas bei Amazon ansehen">
+        
+        <img src="covers/261.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Deine Atmung \u00e4ndert alles!&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="verona pooth entertainer unternehmer nimm dir alles, gib viel die supermilf" data-kats="Entertainer|Unternehmer">
+    <div class="folge"><span>Folge</span>186</div>
+    <div class="person">
+      <h2>Verona Pooth</h2>
+      <p>Entertainer, Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3961214077?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Nimm dir alles, gib viel" aria-label="Nimm dir alles, gib viel von Verona Pooth bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #58463F">Nimm dir alles, gib viel</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3000757104?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Supermilf" aria-label="Die Supermilf von Verona Pooth bei Amazon ansehen">
+        
+        <img src="covers/260.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Supermilf&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. axel gottlob wissenschaftler differenziertes krafttraining mit schwerpunkt wirbelsäule" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>181</div>
+    <div class="person">
+      <h2>Dr. Axel Gottlob</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3437470515?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Differenziertes Krafttraining mit Schwerpunkt Wirbelsäule" aria-label="Differenziertes Krafttraining mit Schwerpunkt Wirbelsäule von Dr. Axel Gottlob bei Amazon ansehen">
+        
+        <img src="covers/145.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Differenziertes Krafttraining mit Schwerpunkt Wirbels\u00e4ule&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="philip hopf unternehmer influencer jeden tag einen schritt" data-kats="Unternehmer|Influencer">
+    <div class="folge"><span>Folge</span>176</div>
+    <div class="person">
+      <h2>Philip Hopf</h2>
+      <p>Unternehmer, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3689360315?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Jeden Tag einen Schritt" aria-label="Jeden Tag einen Schritt von Philip Hopf bei Amazon ansehen">
+        
+        <img src="covers/258.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Jeden Tag einen Schritt&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="samra musiker 1995 lichterfelde" data-kats="Musiker">
+    <div class="folge"><span>Folge</span>169</div>
+    <div class="person">
+      <h2>Samra</h2>
+      <p>Musiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3745326288?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="1995 Lichterfelde" aria-label="1995 Lichterfelde von Samra bei Amazon ansehen">
+        
+        <img src="covers/205.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;1995 Lichterfelde&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="frauke petry politiker requiem für die afd" data-kats="Politiker">
+    <div class="folge"><span>Folge</span>168</div>
+    <div class="person">
+      <h2>Frauke Petry</h2>
+      <p>Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3982304709?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Requiem für die AfD" aria-label="Requiem für die AfD von Frauke Petry bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3E5C4A">Requiem für die AfD</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="maurice höfgen wissenschaftler journalist mythos geldknappheit teuer!" data-kats="Wissenschaftler|Journalist">
+    <div class="folge"><span>Folge</span>167</div>
+    <div class="person">
+      <h2>Maurice Höfgen</h2>
+      <p>Wissenschaftler, Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3791049607?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mythos Geldknappheit" aria-label="Mythos Geldknappheit von Maurice Höfgen bei Amazon ansehen">
+        
+        <img src="covers/144.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mythos Geldknappheit&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3423441712?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Teuer!" aria-label="Teuer! von Maurice Höfgen bei Amazon ansehen">
+        
+        <img src="covers/257.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Teuer!&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="michael lüders journalist wer den wind sät die den sturm ernten hybris am hindukusch die scheinheilige supermacht iran: der falsche krieg" data-kats="Journalist">
+    <div class="folge"><span>Folge</span>166</div>
+    <div class="person">
+      <h2>Michael Lüders</h2>
+      <p>Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3406782868?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Wer den Wind sät" aria-label="Wer den Wind sät von Michael Lüders bei Amazon ansehen">
+        
+        <img src="covers/140.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Wer den Wind s\u00e4t&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3406707807?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die den Sturm ernten" aria-label="Die den Sturm ernten von Michael Lüders bei Amazon ansehen">
+        
+        <img src="covers/141.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die den Sturm ernten&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3406784917?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Hybris am Hindukusch" aria-label="Hybris am Hindukusch von Michael Lüders bei Amazon ansehen">
+        
+        <img src="covers/142.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Hybris am Hindukusch&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3406768415?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die scheinheilige Supermacht" aria-label="Die scheinheilige Supermacht von Michael Lüders bei Amazon ansehen">
+        
+        <img src="covers/143.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die scheinheilige Supermacht&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/1461952603?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Iran: Der falsche Krieg" aria-label="Iran: Der falsche Krieg von Michael Lüders bei Amazon ansehen">
+        
+        <img src="covers/203.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Iran: Der falsche Krieg&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="gregor gysi politiker ein leben ist zu wenig was politiker nicht sagen mein leben in 13 büchern marx und wir gysi vs. sonneborn" data-kats="Politiker">
+    <div class="folge"><span>Folge</span>162</div>
+    <div class="person">
+      <h2>Gregor Gysi</h2>
+      <p>Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/384121391X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Ein Leben ist zu wenig" aria-label="Ein Leben ist zu wenig von Gregor Gysi bei Amazon ansehen">
+        
+        <img src="covers/138.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Ein Leben ist zu wenig&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3843727430?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Was Politiker nicht sagen" aria-label="Was Politiker nicht sagen von Gregor Gysi bei Amazon ansehen">
+        
+        <img src="covers/139.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Was Politiker nicht sagen&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3841239374?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mein Leben in 13 Büchern" aria-label="Mein Leben in 13 Büchern von Gregor Gysi bei Amazon ansehen">
+        
+        <img src="covers/254.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mein Leben in 13 B\u00fcchern&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3841215009?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Marx und wir" aria-label="Marx und wir von Gregor Gysi bei Amazon ansehen">
+        
+        <img src="covers/255.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Marx und wir&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3841226752?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Gysi vs. Sonneborn" aria-label="Gysi vs. Sonneborn von Gregor Gysi bei Amazon ansehen">
+        
+        <img src="covers/256.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Gysi vs. Sonneborn&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="josef resch sicherheit &amp; militär gefahr ist mein beruf" data-kats="Sicherheit &amp; Militär">
+    <div class="folge"><span>Folge</span>161</div>
+    <div class="person">
+      <h2>Josef Resch</h2>
+      <p>Sicherheit &amp; Militär</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3987911182?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Gefahr ist mein Beruf" aria-label="Gefahr ist mein Beruf von Josef Resch bei Amazon ansehen">
+        
+        <img src="covers/202.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Gefahr ist mein Beruf&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="robert habeck politiker von hier an anders wer wir sein könnten den bach rauf" data-kats="Politiker">
+    <div class="folge"><span>Folge</span>160</div>
+    <div class="person">
+      <h2>Robert Habeck</h2>
+      <p>Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/396384051X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Von hier an anders" aria-label="Von hier an anders von Robert Habeck bei Amazon ansehen">
+        
+        <img src="covers/136.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Von hier an anders&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3963840099?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Wer wir sein könnten" aria-label="Wer wir sein könnten von Robert Habeck bei Amazon ansehen">
+        
+        <img src="covers/137.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Wer wir sein k\u00f6nnten&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3462313673?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Den Bach rauf" aria-label="Den Bach rauf von Robert Habeck bei Amazon ansehen">
+        
+        <img src="covers/253.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Den Bach rauf&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="jochen schweizer unternehmer der perfekte augenblick das jochen schweizer prinzip die begegnung warum menschen fliegen können müssen" data-kats="Unternehmer">
+    <div class="folge"><span>Folge</span>159</div>
+    <div class="person">
+      <h2>Jochen Schweizer</h2>
+      <p>Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3833845392?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der perfekte Augenblick" aria-label="Der perfekte Augenblick von Jochen Schweizer bei Amazon ansehen">
+        
+        <img src="covers/198.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der perfekte Augenblick&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3689360226?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Das Jochen Schweizer Prinzip" aria-label="Das Jochen Schweizer Prinzip von Jochen Schweizer bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #58463F">Das Jochen Schweizer Prinzip</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3689360560?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Begegnung" aria-label="Die Begegnung von Jochen Schweizer bei Amazon ansehen">
+        
+        <img src="covers/200.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Begegnung&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3868830820?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Warum Menschen fliegen können müssen" aria-label="Warum Menschen fliegen können müssen von Jochen Schweizer bei Amazon ansehen">
+        
+        <img src="covers/201.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Warum Menschen fliegen k\u00f6nnen m\u00fcssen&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="sahra wagenknecht politiker die selbstgerechten reichtum ohne gier freiheit statt kapitalismus couragiert gegen den strom" data-kats="Politiker">
+    <div class="folge"><span>Folge</span>155</div>
+    <div class="person">
+      <h2>Sahra Wagenknecht</h2>
+      <p>Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593516101?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Selbstgerechten" aria-label="Die Selbstgerechten von Sahra Wagenknecht bei Amazon ansehen">
+        
+        <img src="covers/132.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Selbstgerechten&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593433540?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Reichtum ohne Gier" aria-label="Reichtum ohne Gier von Sahra Wagenknecht bei Amazon ansehen">
+        
+        <img src="covers/133.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Reichtum ohne Gier&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593418096?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Freiheit statt Kapitalismus" aria-label="Freiheit statt Kapitalismus von Sahra Wagenknecht bei Amazon ansehen">
+        
+        <img src="covers/134.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Freiheit statt Kapitalismus&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3864896851?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Couragiert gegen den Strom" aria-label="Couragiert gegen den Strom von Sahra Wagenknecht bei Amazon ansehen">
+        
+        <img src="covers/135.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Couragiert gegen den Strom&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. gregor hasler arzt wissenschaftler die darm-hirn-connection higher self resilienz: der wir-faktor was uns wirklich nährt" data-kats="Arzt|Wissenschaftler">
+    <div class="folge"><span>Folge</span>149</div>
+    <div class="person">
+      <h2>Prof. Dr. Gregor Hasler</h2>
+      <p>Arzt, Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3608400028?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Darm-Hirn-Connection" aria-label="Die Darm-Hirn-Connection von Prof. Dr. Gregor Hasler bei Amazon ansehen">
+        
+        <img src="covers/130.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Darm-Hirn-Connection&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3608206035?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Higher Self" aria-label="Higher Self von Prof. Dr. Gregor Hasler bei Amazon ansehen">
+        
+        <img src="covers/131.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Higher Self&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3608432256?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Resilienz: Der Wir-Faktor" aria-label="Resilienz: Der Wir-Faktor von Prof. Dr. Gregor Hasler bei Amazon ansehen">
+        
+        <img src="covers/251.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Resilienz: Der Wir-Faktor&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641308194?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Was uns wirklich nährt" aria-label="Was uns wirklich nährt von Prof. Dr. Gregor Hasler bei Amazon ansehen">
+        
+        <img src="covers/252.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Was uns wirklich n\u00e4hrt&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. andreas luczak wissenschaftler deutschlands energiewende – fakten, mythen und irrsinn" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>144</div>
+    <div class="person">
+      <h2>Prof. Dr. Andreas Luczak</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3658450088?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Deutschlands Energiewende – Fakten, Mythen und Irrsinn" aria-label="Deutschlands Energiewende – Fakten, Mythen und Irrsinn von Prof. Dr. Andreas Luczak bei Amazon ansehen">
+        
+        <img src="covers/129.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Deutschlands Energiewende \u2013 Fakten, Mythen und Irrsinn&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="sophia thiel influencer sportler come back stronger fit &amp; stark mit sophia einfach schlank und fit fitness sweets mit meal prep zur traumfigur" data-kats="Influencer|Sportler">
+    <div class="folge"><span>Folge</span>140</div>
+    <div class="person">
+      <h2>Sophia Thiel</h2>
+      <p>Influencer, Sportler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3965840894?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Come back stronger" aria-label="Come back stronger von Sophia Thiel bei Amazon ansehen">
+        
+        <img src="covers/195.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Come back stronger&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3898839273?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Fit &amp; stark mit Sophia" aria-label="Fit &amp; stark mit Sophia von Sophia Thiel bei Amazon ansehen">
+        
+        <img src="covers/196.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Fit \u0026 stark mit Sophia&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3959715404?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Einfach schlank und fit" aria-label="Einfach schlank und fit von Sophia Thiel bei Amazon ansehen">
+        
+        <img src="covers/197.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Einfach schlank und fit&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3959718993?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Fitness Sweets" aria-label="Fitness Sweets von Sophia Thiel bei Amazon ansehen">
+        
+        <img src="covers/249.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Fitness Sweets&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3745303024?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mit Meal Prep zur Traumfigur" aria-label="Mit Meal Prep zur Traumfigur von Sophia Thiel bei Amazon ansehen">
+        
+        <img src="covers/250.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mit Meal Prep zur Traumfigur&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="thomas derksen influencer und täglich grüßt der tigervater kartoffelbrei mit stäbchen" data-kats="Influencer">
+    <div class="folge"><span>Folge</span>139</div>
+    <div class="person">
+      <h2>Thomas Derksen</h2>
+      <p>Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641239079?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Und täglich grüßt der Tigervater" aria-label="Und täglich grüßt der Tigervater von Thomas Derksen bei Amazon ansehen">
+        
+        <img src="covers/247.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Und t\u00e4glich gr\u00fc\u00dft der Tigervater&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/364127026X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Kartoffelbrei mit Stäbchen" aria-label="Kartoffelbrei mit Stäbchen von Thomas Derksen bei Amazon ansehen">
+        
+        <img src="covers/248.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kartoffelbrei mit St\u00e4bchen&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="thorsten havener entertainer ich weiß, was du denkst denken sie nicht an einen blauen elefanten! denk doch, was du willst ich sehe das, was du nicht sagst sag es keinem weiter" data-kats="Entertainer">
+    <div class="folge"><span>Folge</span>138</div>
+    <div class="person">
+      <h2>Thorsten Havener</h2>
+      <p>Entertainer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644402817?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Ich weiß, was du denkst" aria-label="Ich weiß, was du denkst von Thorsten Havener bei Amazon ansehen">
+        
+        <img src="covers/127.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Ich wei\u00df, was du denkst&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644426619?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Denken Sie nicht an einen blauen Elefanten!" aria-label="Denken Sie nicht an einen blauen Elefanten! von Thorsten Havener bei Amazon ansehen">
+        
+        <img src="covers/128.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Denken Sie nicht an einen blauen Elefanten!&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644208514?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Denk doch, was du willst" aria-label="Denk doch, was du willst von Thorsten Havener bei Amazon ansehen">
+        
+        <img src="covers/244.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Denk doch, was du willst&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3969050227?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Ich sehe das, was du nicht sagst" aria-label="Ich sehe das, was du nicht sagst von Thorsten Havener bei Amazon ansehen">
+        
+        <img src="covers/245.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Ich sehe das, was du nicht sagst&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644400741?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Sag es keinem weiter" aria-label="Sag es keinem weiter von Thorsten Havener bei Amazon ansehen">
+        
+        <img src="covers/246.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Sag es keinem weiter&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. andreas beck unternehmer wissenschaftler erfolgreich wissenschaftlich investieren" data-kats="Unternehmer|Wissenschaftler">
+    <div class="folge"><span>Folge</span>133</div>
+    <div class="person">
+      <h2>Dr. Andreas Beck</h2>
+      <p>Unternehmer, Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3969672902?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Erfolgreich wissenschaftlich investieren" aria-label="Erfolgreich wissenschaftlich investieren von Dr. Andreas Beck bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #2B3A67">Erfolgreich wissenschaftlich investieren</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="tim raue unternehmer ich weiß, was hunger ist my way herr raue reist rezepte aus der brasserie 360° berlin" data-kats="Unternehmer">
+    <div class="folge"><span>Folge</span>132</div>
+    <div class="person">
+      <h2>Tim Raue</h2>
+      <p>Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3766726412?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Ich weiß, was Hunger ist" aria-label="Ich weiß, was Hunger ist von Tim Raue bei Amazon ansehen">
+        
+        <img src="covers/126.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Ich wei\u00df, was Hunger ist&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3766722719?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="My Way" aria-label="My Way von Tim Raue bei Amazon ansehen">
+        
+        <img src="covers/239.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;My Way&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3766727001?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Herr Raue reist" aria-label="Herr Raue reist von Tim Raue bei Amazon ansehen">
+        
+        <img src="covers/240.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Herr Raue reist&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3766725017?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Rezepte aus der Brasserie" aria-label="Rezepte aus der Brasserie von Tim Raue bei Amazon ansehen">
+        
+        <img src="covers/241.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Rezepte aus der Brasserie&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/s?k=360%C2%B0+Berlin+Tim+Raue&amp;i=stripbooks&amp;tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="360° Berlin" aria-label="360° Berlin von Tim Raue bei Amazon ansehen">
+        
+        <img src="covers/242.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;360\u00b0 Berlin&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="andré wiersig sportler abenteurer nachts allein im ozean" data-kats="Sportler|Abenteurer">
+    <div class="folge"><span>Folge</span>131</div>
+    <div class="person">
+      <h2>André Wiersig</h2>
+      <p>Sportler, Abenteurer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3981879821?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Nachts allein im Ozean" aria-label="Nachts allein im Ozean von André Wiersig bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3E5C4A">Nachts allein im Ozean</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. stephan geisler wissenschaftler influencer hypertrophietraining" data-kats="Wissenschaftler|Influencer">
+    <div class="folge"><span>Folge</span>127</div>
+    <div class="person">
+      <h2>Prof. Dr. Stephan Geisler</h2>
+      <p>Wissenschaftler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3745318242?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Hypertrophietraining" aria-label="Hypertrophietraining von Prof. Dr. Stephan Geisler bei Amazon ansehen">
+        
+        <img src="covers/238.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Hypertrophietraining&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="thomas schulz journalist was google wirklich will zukunftsmedizin" data-kats="Journalist">
+    <div class="folge"><span>Folge</span>125</div>
+    <div class="person">
+      <h2>Thomas Schulz</h2>
+      <p>Journalist</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641174309?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Was Google wirklich will" aria-label="Was Google wirklich will von Thomas Schulz bei Amazon ansehen">
+        
+        <img src="covers/123.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Was Google wirklich will&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641222923?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Zukunftsmedizin" aria-label="Zukunftsmedizin von Thomas Schulz bei Amazon ansehen">
+        
+        <img src="covers/124.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Zukunftsmedizin&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="thomas hitzlsperger sportler mutproben" data-kats="Sportler">
+    <div class="folge"><span>Folge</span>119</div>
+    <div class="person">
+      <h2>Thomas Hitzlsperger</h2>
+      <p>Sportler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3462311751?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mutproben" aria-label="Mutproben von Thomas Hitzlsperger bei Amazon ansehen">
+        
+        <img src="covers/237.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mutproben&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="doc felix arzt influencer feel good" data-kats="Arzt|Influencer">
+    <div class="folge"><span>Folge</span>113</div>
+    <div class="person">
+      <h2>Doc Felix</h2>
+      <p>Arzt, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3423442255?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Feel good" aria-label="Feel good von Doc Felix bei Amazon ansehen">
+        
+        <img src="covers/236.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Feel good&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. mitja back wissenschaftler ich! die kraft des narzissmus" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>106</div>
+    <div class="person">
+      <h2>Prof. Dr. Mitja Back</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641299616?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Ich! Die Kraft des Narzissmus" aria-label="Ich! Die Kraft des Narzissmus von Prof. Dr. Mitja Back bei Amazon ansehen">
+        
+        <img src="covers/235.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Ich! Die Kraft des Narzissmus&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="aaron troschke influencer glück gehabt!!!" data-kats="Influencer">
+    <div class="folge"><span>Folge</span>102</div>
+    <div class="person">
+      <h2>Aaron Troschke</h2>
+      <p>Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3959716230?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Glück gehabt!!!" aria-label="Glück gehabt!!! von Aaron Troschke bei Amazon ansehen">
+        
+        <img src="covers/234.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Gl\u00fcck gehabt!!!&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. ulrich hegerl arzt wissenschaftler das rätsel depression depressiv? depressionen bewältigen" data-kats="Arzt|Wissenschaftler">
+    <div class="folge"><span>Folge</span>101</div>
+    <div class="person">
+      <h2>Prof. Dr. Ulrich Hegerl</h2>
+      <p>Arzt, Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3406686974?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Das Rätsel Depression" aria-label="Das Rätsel Depression von Prof. Dr. Ulrich Hegerl bei Amazon ansehen">
+        
+        <img src="covers/193.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Das R\u00e4tsel Depression&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641022916?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Depressiv?" aria-label="Depressiv? von Prof. Dr. Ulrich Hegerl bei Amazon ansehen">
+        
+        <img src="covers/194.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Depressiv?&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3830467834?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Depressionen bewältigen" aria-label="Depressionen bewältigen von Prof. Dr. Ulrich Hegerl bei Amazon ansehen">
+        
+        <img src="covers/233.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Depressionen bew\u00e4ltigen&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="otto bulletproof influencer sicherheit &amp; militär becoming bulletproof" data-kats="Influencer|Sicherheit &amp; Militär">
+    <div class="folge"><span>Folge</span>100</div>
+    <div class="person">
+      <h2>Otto Bulletproof</h2>
+      <p>Influencer, Sicherheit &amp; Militär</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3745323092?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Becoming Bulletproof" aria-label="Becoming Bulletproof von Otto Bulletproof bei Amazon ansehen">
+        
+        <img src="covers/232.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Becoming Bulletproof&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="savas coban sportler abenteurer trail der träume homerun" data-kats="Sportler|Abenteurer">
+    <div class="folge"><span>Folge</span>93</div>
+    <div class="person">
+      <h2>Savas Coban</h2>
+      <p>Sportler, Abenteurer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3846410039?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Trail der Träume" aria-label="Trail der Träume von Savas Coban bei Amazon ansehen">
+        
+        <img src="covers/230.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Trail der Tr\u00e4ume&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3912559007?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="HOMERUN" aria-label="HOMERUN von Savas Coban bei Amazon ansehen">
+        
+        <img src="covers/231.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;HOMERUN&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="david döbele unternehmer influencer nach ganz oben" data-kats="Unternehmer|Influencer">
+    <div class="folge"><span>Folge</span>90</div>
+    <div class="person">
+      <h2>David Döbele</h2>
+      <p>Unternehmer, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3986094350?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Nach ganz oben" aria-label="Nach ganz oben von David Döbele bei Amazon ansehen">
+        
+        <img src="covers/229.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Nach ganz oben&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="christian wolf unternehmer influencer der protein-fasten-trick" data-kats="Unternehmer|Influencer">
+    <div class="folge"><span>Folge</span>89</div>
+    <div class="person">
+      <h2>Christian Wolf</h2>
+      <p>Unternehmer, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3689360544?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der Protein-Fasten-Trick" aria-label="Der Protein-Fasten-Trick von Christian Wolf bei Amazon ansehen">
+        
+        <img src="covers/228.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Protein-Fasten-Trick&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="florian gschwandtner unternehmer so läuft start-up" data-kats="Unternehmer">
+    <div class="folge"><span>Folge</span>83</div>
+    <div class="person">
+      <h2>Florian Gschwandtner</h2>
+      <p>Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3711052428?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="So läuft Start-up" aria-label="So läuft Start-up von Florian Gschwandtner bei Amazon ansehen">
+        
+        <img src="covers/122.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;So l\u00e4uft Start-up&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="daniel jung influencer unternehmer let&#39;s rock education der classroom-coach" data-kats="Influencer|Unternehmer">
+    <div class="folge"><span>Folge</span>82</div>
+    <div class="person">
+      <h2>Daniel Jung</h2>
+      <p>Influencer, Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426278154?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Let&#39;s rock education" aria-label="Let&#39;s rock education von Daniel Jung bei Amazon ansehen">
+        
+        <img src="covers/226.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Let\u0027s rock education&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3961293015?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der Classroom-Coach" aria-label="Der Classroom-Coach von Daniel Jung bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3E5C4A">Der Classroom-Coach</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. veronika wolter arzt ich höre dich" data-kats="Arzt">
+    <div class="folge"><span>Folge</span>81</div>
+    <div class="person">
+      <h2>Dr. Veronika Wolter</h2>
+      <p>Arzt</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3745321022?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Ich höre dich" aria-label="Ich höre dich von Dr. Veronika Wolter bei Amazon ansehen">
+        
+        <img src="covers/225.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Ich h\u00f6re dich&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="redefabrik influencer meisterkurs rhetorik meisterkurs schlagfertigkeit" data-kats="Influencer">
+    <div class="folge"><span>Folge</span>79</div>
+    <div class="person">
+      <h2>Redefabrik</h2>
+      <p>Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3962671447?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Meisterkurs Rhetorik" aria-label="Meisterkurs Rhetorik von Redefabrik bei Amazon ansehen">
+        
+        <img src="covers/223.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Meisterkurs Rhetorik&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3962675469?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Meisterkurs Schlagfertigkeit" aria-label="Meisterkurs Schlagfertigkeit von Redefabrik bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3D3B5C">Meisterkurs Schlagfertigkeit</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="paul unterleitner sportler influencer green power" data-kats="Sportler|Influencer">
+    <div class="folge"><span>Folge</span>77</div>
+    <div class="person">
+      <h2>Paul Unterleitner</h2>
+      <p>Sportler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/396584539X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Green Power" aria-label="Green Power von Paul Unterleitner bei Amazon ansehen">
+        
+        <img src="covers/222.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Green Power&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. markus klingenberg arzt die arthrose-sprechstunde" data-kats="Arzt">
+    <div class="folge"><span>Folge</span>71</div>
+    <div class="person">
+      <h2>Dr. Markus Klingenberg</h2>
+      <p>Arzt</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3757816730?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Arthrose-Sprechstunde" aria-label="Die Arthrose-Sprechstunde von Dr. Markus Klingenberg bei Amazon ansehen">
+        
+        <img src="covers/221.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Arthrose-Sprechstunde&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="shi heng yi sportler influencer shaolin spirit" data-kats="Sportler|Influencer">
+    <div class="folge"><span>Folge</span>69</div>
+    <div class="person">
+      <h2>Shi Heng Yi</h2>
+      <p>Sportler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426467399?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Shaolin Spirit" aria-label="Shaolin Spirit von Shi Heng Yi bei Amazon ansehen">
+        
+        <img src="covers/220.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Shaolin Spirit&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="urs kalecinski sportler influencer my miracle mindset" data-kats="Sportler|Influencer">
+    <div class="folge"><span>Folge</span>68</div>
+    <div class="person">
+      <h2>Urs Kalecinski</h2>
+      <p>Sportler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3689362113?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="My Miracle Mindset" aria-label="My Miracle Mindset von Urs Kalecinski bei Amazon ansehen">
+        
+        <img src="covers/219.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;My Miracle Mindset&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. peter vajkoczy arzt kopfarbeit" data-kats="Arzt">
+    <div class="folge"><span>Folge</span>60</div>
+    <div class="person">
+      <h2>Prof. Dr. Peter Vajkoczy</h2>
+      <p>Arzt</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3426458063?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Kopfarbeit" aria-label="Kopfarbeit von Prof. Dr. Peter Vajkoczy bei Amazon ansehen">
+        
+        <img src="covers/215.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kopfarbeit&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="philipp westermeyer unternehmer digital unplugged" data-kats="Unternehmer">
+    <div class="folge"><span>Folge</span>59</div>
+    <div class="person">
+      <h2>Philipp Westermeyer</h2>
+      <p>Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3843725047?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Digital Unplugged" aria-label="Digital Unplugged von Philipp Westermeyer bei Amazon ansehen">
+        
+        <img src="covers/217.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Digital Unplugged&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="jack nasher wissenschaftler unternehmer durchschaut deal! du gibst mir, was ich will! entlarvt! überzeugt!" data-kats="Wissenschaftler|Unternehmer">
+    <div class="folge"><span>Folge</span>55</div>
+    <div class="person">
+      <h2>Jack Nasher</h2>
+      <p>Wissenschaftler, Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641048893?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Durchschaut" aria-label="Durchschaut von Jack Nasher bei Amazon ansehen">
+        
+        <img src="covers/118.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Durchschaut&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593422298?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Deal! Du gibst mir, was ich will!" aria-label="Deal! Du gibst mir, was ich will! von Jack Nasher bei Amazon ansehen">
+        
+        <img src="covers/119.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Deal! Du gibst mir, was ich will!&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593501260?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Entlarvt!" aria-label="Entlarvt! von Jack Nasher bei Amazon ansehen">
+        
+        <img src="covers/120.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Entlarvt!&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593435802?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Überzeugt!" aria-label="Überzeugt! von Jack Nasher bei Amazon ansehen">
+        
+        <img src="covers/121.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;\u00dcberzeugt!&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="sebastian caspar ex-krimineller influencer zone c" data-kats="Ex-Krimineller|Influencer">
+    <div class="folge"><span>Folge</span>54</div>
+    <div class="person">
+      <h2>Sebastian Caspar</h2>
+      <p>Ex-Krimineller, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3957910714?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Zone C" aria-label="Zone C von Sebastian Caspar bei Amazon ansehen">
+        
+        <img src="covers/214.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Zone C&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="fritz meinecke influencer abenteurer der abenteurer" data-kats="Influencer|Abenteurer">
+    <div class="folge"><span>Folge</span>52</div>
+    <div class="person">
+      <h2>Fritz Meinecke</h2>
+      <p>Influencer, Abenteurer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644401187?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der Abenteurer" aria-label="Der Abenteurer von Fritz Meinecke bei Amazon ansehen">
+        
+        <img src="covers/117.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Abenteurer&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="papaplatte influencer edeltalk" data-kats="Influencer">
+    <div class="folge"><span>Folge</span>51</div>
+    <div class="person">
+      <h2>Papaplatte</h2>
+      <p>Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3967750825?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Edeltalk" aria-label="Edeltalk von Papaplatte bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3D3B5C">Edeltalk</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="niko rittenau wissenschaftler influencer vegan-klischee ade! vegan-klischee ade! das kochbuch vegan low budget vegan ist unsinn!" data-kats="Wissenschaftler|Influencer">
+    <div class="folge"><span>Folge</span>50</div>
+    <div class="person">
+      <h2>Niko Rittenau</h2>
+      <p>Wissenschaftler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3831038856?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Vegan-Klischee ade!" aria-label="Vegan-Klischee ade! von Niko Rittenau bei Amazon ansehen">
+        
+        <img src="covers/112.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Vegan-Klischee ade!&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3831038856?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Vegan-Klischee ade! Das Kochbuch" aria-label="Vegan-Klischee ade! Das Kochbuch von Niko Rittenau bei Amazon ansehen">
+        
+        <img src="covers/113.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Vegan-Klischee ade! Das Kochbuch&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/395575622X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Vegan Low Budget" aria-label="Vegan Low Budget von Niko Rittenau bei Amazon ansehen">
+        
+        <img src="covers/114.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Vegan Low Budget&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3955751937?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Vegan ist Unsinn!" aria-label="Vegan ist Unsinn! von Niko Rittenau bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #5B4A2E">Vegan ist Unsinn!</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="pascal kerouche unternehmer snapshot stories" data-kats="Unternehmer">
+    <div class="folge"><span>Folge</span>49</div>
+    <div class="person">
+      <h2>Pascal Kerouche</h2>
+      <p>Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/0198823037?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Snapshot Stories" aria-label="Snapshot Stories von Pascal Kerouche bei Amazon ansehen">
+        
+        <img src="covers/216.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Snapshot Stories&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. pero micic wissenschaftler unternehmer wie wir uns täglich die zukunft versauen bright future business die fünf zukunftsbrillen 30 minuten zukunftsmanagement" data-kats="Wissenschaftler|Unternehmer">
+    <div class="folge"><span>Folge</span>48</div>
+    <div class="person">
+      <h2>Dr. Pero Micic</h2>
+      <p>Wissenschaftler, Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3843706859?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Wie wir uns täglich die Zukunft versauen" aria-label="Wie wir uns täglich die Zukunft versauen von Dr. Pero Micic bei Amazon ansehen">
+        
+        <img src="covers/108.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Wie wir uns t\u00e4glich die Zukunft versauen&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3967402029?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Bright Future Business" aria-label="Bright Future Business von Dr. Pero Micic bei Amazon ansehen">
+        
+        <img src="covers/109.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Bright Future Business&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3862001261?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die fünf Zukunftsbrillen" aria-label="Die fünf Zukunftsbrillen von Dr. Pero Micic bei Amazon ansehen">
+        
+        <img src="covers/110.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die f\u00fcnf Zukunftsbrillen&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3862006212?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="30 Minuten Zukunftsmanagement" aria-label="30 Minuten Zukunftsmanagement von Dr. Pero Micic bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #6B3B3B">30 Minuten Zukunftsmanagement</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="carsten stahl aktivist influencer du täter, du opfer" data-kats="Aktivist|Influencer">
+    <div class="folge"><span>Folge</span>46</div>
+    <div class="person">
+      <h2>Carsten Stahl</h2>
+      <p>Aktivist, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3833863919?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Du Täter, du Opfer" aria-label="Du Täter, du Opfer von Carsten Stahl bei Amazon ansehen">
+        
+        <img src="covers/107.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Du T\u00e4ter, du Opfer&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="hubertus becker ex-krimineller globale nomaden osten globale nomaden süden zappenduster ritual knast" data-kats="Ex-Krimineller">
+    <div class="folge"><span>Folge</span>44</div>
+    <div class="person">
+      <h2>Hubertus Becker</h2>
+      <p>Ex-Krimineller</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/s?k=Globale+Nomaden+Osten+Hubertus+Becker&amp;i=stripbooks&amp;tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Globale Nomaden Osten" aria-label="Globale Nomaden Osten von Hubertus Becker bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3E5C4A">Globale Nomaden Osten</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3898014290?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Globale Nomaden Süden" aria-label="Globale Nomaden Süden von Hubertus Becker bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3D3B5C">Globale Nomaden Süden</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3898010945?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Zappenduster" aria-label="Zappenduster von Hubertus Becker bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #5B4A2E">Zappenduster</span>
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3931801659?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Ritual Knast" aria-label="Ritual Knast von Hubertus Becker bei Amazon ansehen">
+        
+        <img src="covers/106.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Ritual Knast&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="martin frost ex-krimineller out of the dark" data-kats="Ex-Krimineller">
+    <div class="folge"><span>Folge</span>43</div>
+    <div class="person">
+      <h2>Martin Frost</h2>
+      <p>Ex-Krimineller</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3986092501?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Out of the Dark" aria-label="Out of the Dark von Martin Frost bei Amazon ansehen">
+        
+        <img src="covers/213.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Out of the Dark&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="antje von dewitz unternehmer mut steht uns gut!" data-kats="Unternehmer">
+    <div class="folge"><span>Folge</span>38</div>
+    <div class="person">
+      <h2>Antje von Dewitz</h2>
+      <p>Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/371095083X?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mut steht uns gut!" aria-label="Mut steht uns gut! von Antje von Dewitz bei Amazon ansehen">
+        
+        <img src="covers/102.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mut steht uns gut!&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="marc friedrich unternehmer influencer der größte raubzug der geschichte der crash ist die lösung kapitalfehler sonst knallt&#39;s! der größte crash aller zeiten die größte chance aller zeiten" data-kats="Unternehmer|Influencer">
+    <div class="folge"><span>Folge</span>35</div>
+    <div class="person">
+      <h2>Marc Friedrich</h2>
+      <p>Unternehmer, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3404608046?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der größte Raubzug der Geschichte" aria-label="Der größte Raubzug der Geschichte von Marc Friedrich bei Amazon ansehen">
+        
+        <img src="covers/96.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der gr\u00f6\u00dfte Raubzug der Geschichte&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3404608585?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der Crash ist die Lösung" aria-label="Der Crash ist die Lösung von Marc Friedrich bei Amazon ansehen">
+        
+        <img src="covers/97.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Crash ist die L\u00f6sung&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3732523667?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Kapitalfehler" aria-label="Kapitalfehler von Marc Friedrich bei Amazon ansehen">
+        
+        <img src="covers/98.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kapitalfehler&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3732539946?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Sonst knallt&#39;s!" aria-label="Sonst knallt&#39;s! von Marc Friedrich bei Amazon ansehen">
+        
+        <img src="covers/99.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Sonst knallt\u0027s!&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3732578445?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der größte Crash aller Zeiten" aria-label="Der größte Crash aller Zeiten von Marc Friedrich bei Amazon ansehen">
+        
+        <img src="covers/100.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der gr\u00f6\u00dfte Crash aller Zeiten&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3960928645?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die größte Chance aller Zeiten" aria-label="Die größte Chance aller Zeiten von Marc Friedrich bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #6B3B3B">Die größte Chance aller Zeiten</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="robert marc lehmann aktivist wissenschaftler influencer mission erde – die welt ist es wert, um sie zu kämpfen" data-kats="Aktivist|Wissenschaftler|Influencer">
+    <div class="folge"><span>Folge</span>33</div>
+    <div class="person">
+      <h2>Robert Marc Lehmann</h2>
+      <p>Aktivist, Wissenschaftler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3641273013?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Mission Erde – Die Welt ist es wert, um sie zu kämpfen" aria-label="Mission Erde – Die Welt ist es wert, um sie zu kämpfen von Robert Marc Lehmann bei Amazon ansehen">
+        
+        <img src="covers/95.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mission Erde \u2013 Die Welt ist es wert, um sie zu k\u00e4mpfen&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="sven voelpel wissenschaftler entscheide selbst, wie alt du bist die jungbrunnen-formel 7 jahre jünger in 7 wochen" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>32</div>
+    <div class="person">
+      <h2>Sven Voelpel</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644570310?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Entscheide selbst, wie alt du bist" aria-label="Entscheide selbst, wie alt du bist von Sven Voelpel bei Amazon ansehen">
+        
+        <img src="covers/92.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Entscheide selbst, wie alt du bist&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3644005028?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Die Jungbrunnen-Formel" aria-label="Die Jungbrunnen-Formel von Sven Voelpel bei Amazon ansehen">
+        
+        <img src="covers/93.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Jungbrunnen-Formel&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/s?k=7+Jahre+j%C3%BCnger+in+7+Wochen+Sven+Voelpel&amp;i=stripbooks&amp;tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="7 Jahre jünger in 7 Wochen" aria-label="7 Jahre jünger in 7 Wochen von Sven Voelpel bei Amazon ansehen">
+        
+        <img src="covers/94.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;7 Jahre j\u00fcnger in 7 Wochen&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. gerd kommer unternehmer souverän investieren mit indexfonds und etfs souverän investieren für einsteiger souverän investieren vor und im ruhestand kaufen oder mieten? der leichte einstieg in die welt der etfs" data-kats="Unternehmer">
+    <div class="folge"><span>Folge</span>31</div>
+    <div class="person">
+      <h2>Dr. Gerd Kommer</h2>
+      <p>Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593395428?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Souverän investieren mit Indexfonds und ETFs" aria-label="Souverän investieren mit Indexfonds und ETFs von Dr. Gerd Kommer bei Amazon ansehen">
+        
+        <img src="covers/87.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Souver\u00e4n investieren mit Indexfonds und ETFs&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593453924?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Souverän investieren für Einsteiger" aria-label="Souverän investieren für Einsteiger von Dr. Gerd Kommer bei Amazon ansehen">
+        
+        <img src="covers/88.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Souver\u00e4n investieren f\u00fcr Einsteiger&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593512459?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Souverän investieren vor und im Ruhestand" aria-label="Souverän investieren vor und im Ruhestand von Dr. Gerd Kommer bei Amazon ansehen">
+        
+        <img src="covers/89.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Souver\u00e4n investieren vor und im Ruhestand&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3593390809?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Kaufen oder mieten?" aria-label="Kaufen oder mieten? von Dr. Gerd Kommer bei Amazon ansehen">
+        
+        <img src="covers/90.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kaufen oder mieten?&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://www.amazon.de/dp/3986096205?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Der leichte Einstieg in die Welt der ETFs" aria-label="Der leichte Einstieg in die Welt der ETFs von Dr. Gerd Kommer bei Amazon ansehen">
+        
+        <img src="covers/91.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der leichte Einstieg in die Welt der ETFs&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="alexander leschik politiker im bann der afd" data-kats="Politiker">
+    <div class="folge"><span>Folge</span>30</div>
+    <div class="person">
+      <h2>Alexander Leschik</h2>
+      <p>Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://www.amazon.de/dp/3958904351?tag=podcastbueche-21" target="_blank" rel="sponsored noopener"
+         title="Im Bann der AfD" aria-label="Im Bann der AfD von Alexander Leschik bei Amazon ansehen">
+        
+        <img src="covers/212.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Im Bann der AfD&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. henning beck wissenschaftler biologie des geistesblitzes hirnrissig faszinierendes gehirn irren ist nützlich! das neue lernen 12 gesetze der dummheit besser denken" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>29</div>
+    <div class="person">
+      <h2>Dr. Henning Beck</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B03IAiYVt" target="_blank" rel="sponsored noopener"
+         title="Biologie des Geistesblitzes" aria-label="Biologie des Geistesblitzes von Dr. Henning Beck bei Amazon ansehen">
+        
+        <img src="covers/79.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Biologie des Geistesblitzes&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B08Wi1zqo" target="_blank" rel="sponsored noopener"
+         title="Hirnrissig" aria-label="Hirnrissig von Dr. Henning Beck bei Amazon ansehen">
+        
+        <img src="covers/80.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Hirnrissig&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0igmBM9j" target="_blank" rel="sponsored noopener"
+         title="Faszinierendes Gehirn" aria-label="Faszinierendes Gehirn von Dr. Henning Beck bei Amazon ansehen">
+        
+        <img src="covers/82.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Faszinierendes Gehirn&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B01zkbGb4" target="_blank" rel="sponsored noopener"
+         title="Irren ist nützlich!" aria-label="Irren ist nützlich! von Dr. Henning Beck bei Amazon ansehen">
+        
+        <img src="covers/83.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Irren ist n\u00fctzlich!&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0b8QZXm7" target="_blank" rel="sponsored noopener"
+         title="Das neue Lernen" aria-label="Das neue Lernen von Dr. Henning Beck bei Amazon ansehen">
+        
+        <img src="covers/84.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Das neue Lernen&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B07Va00Nd" target="_blank" rel="sponsored noopener"
+         title="12 Gesetze der Dummheit" aria-label="12 Gesetze der Dummheit von Dr. Henning Beck bei Amazon ansehen">
+        
+        <img src="covers/85.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;12 Gesetze der Dummheit&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B00rNu9ll" target="_blank" rel="sponsored noopener"
+         title="Besser denken" aria-label="Besser denken von Dr. Henning Beck bei Amazon ansehen">
+        
+        <img src="covers/86.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Besser denken&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="dr. mark benecke wissenschaftler influencer the dream of eternal life dem doktor seine seiten murderous methods brandmal lachende wissenschaft warum man spaghetti nicht durch zwei teilen kann mark benecke ermittelt seziert das knallt dem frosch die locken weg dem täter auf der spur tracking down the culprit viren für anfänger mein leben nach dem tod kat menschiks und des diplom-biologen doctor rerum medicinalium mark beneckes illustrirtes thierleben viral. blutrausch memento mori kannibal. jagdrausch warum nacktbilder zu gedächtnislücken führen vampire unter uns! wo bleibt die maus?" data-kats="Wissenschaftler|Influencer">
+    <div class="folge"><span>Folge</span>28</div>
+    <div class="person">
+      <h2>Dr. Mark Benecke</h2>
+      <p>Wissenschaftler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B0gSZQiaH" target="_blank" rel="sponsored noopener"
+         title="The Dream of Eternal Life" aria-label="The Dream of Eternal Life von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/58.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;The Dream of Eternal Life&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0hvTjOpD" target="_blank" rel="sponsored noopener"
+         title="Dem Doktor seine Seiten" aria-label="Dem Doktor seine Seiten von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #5B4A2E">Dem Doktor seine Seiten</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0hqKaMzs" target="_blank" rel="sponsored noopener"
+         title="Murderous Methods" aria-label="Murderous Methods von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/60.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Murderous Methods&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B04qPtKD4" target="_blank" rel="sponsored noopener"
+         title="Brandmal" aria-label="Brandmal von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/61.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Brandmal&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0e1pCXsE" target="_blank" rel="sponsored noopener"
+         title="Lachende Wissenschaft" aria-label="Lachende Wissenschaft von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/62.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Lachende Wissenschaft&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gJ4wUI4" target="_blank" rel="sponsored noopener"
+         title="Warum man Spaghetti nicht durch zwei teilen kann" aria-label="Warum man Spaghetti nicht durch zwei teilen kann von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/63.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Warum man Spaghetti nicht durch zwei teilen kann&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gZLXYXS" target="_blank" rel="sponsored noopener"
+         title="Mark Benecke ermittelt" aria-label="Mark Benecke ermittelt von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #6B3B3B">Mark Benecke ermittelt</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B01jvT2uD" target="_blank" rel="sponsored noopener"
+         title="Seziert" aria-label="Seziert von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/65.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Seziert&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B09s2hopk" target="_blank" rel="sponsored noopener"
+         title="Das knallt dem Frosch die Locken weg" aria-label="Das knallt dem Frosch die Locken weg von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/66.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Das knallt dem Frosch die Locken weg&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0g0bEjJL" target="_blank" rel="sponsored noopener"
+         title="Dem Täter auf der Spur" aria-label="Dem Täter auf der Spur von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/67.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Dem T\u00e4ter auf der Spur&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gO1FIpi" target="_blank" rel="sponsored noopener"
+         title="Tracking down the Culprit" aria-label="Tracking down the Culprit von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/68.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Tracking down the Culprit&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B09r352GF" target="_blank" rel="sponsored noopener"
+         title="Viren für Anfänger" aria-label="Viren für Anfänger von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/69.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Viren f\u00fcr Anf\u00e4nger&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B05X0JGci" target="_blank" rel="sponsored noopener"
+         title="Mein Leben nach dem Tod" aria-label="Mein Leben nach dem Tod von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/70.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Mein Leben nach dem Tod&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B01TyjRVQ" target="_blank" rel="sponsored noopener"
+         title="Kat Menschiks und des Diplom-Biologen Doctor Rerum Medicinalium Mark Beneckes Illustrirtes Thierleben" aria-label="Kat Menschiks und des Diplom-Biologen Doctor Rerum Medicinalium Mark Beneckes Illustrirtes Thierleben von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/71.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kat Menschiks und des Diplom-Biologen Doctor Rerum Medicinalium Mark Beneckes Illustrirtes Thierleben&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0dUcZoIB" target="_blank" rel="sponsored noopener"
+         title="Viral. Blutrausch" aria-label="Viral. Blutrausch von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/73.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Viral. Blutrausch&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B004Gdgct" target="_blank" rel="sponsored noopener"
+         title="Memento Mori" aria-label="Memento Mori von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/74.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Memento Mori&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gHvlzuH" target="_blank" rel="sponsored noopener"
+         title="Kannibal. Jagdrausch" aria-label="Kannibal. Jagdrausch von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/75.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kannibal. Jagdrausch&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B02292LFD" target="_blank" rel="sponsored noopener"
+         title="Warum Nacktbilder zu Gedächtnislücken führen" aria-label="Warum Nacktbilder zu Gedächtnislücken führen von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #4A4E69">Warum Nacktbilder zu Gedächtnislücken führen</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0aryJMvA" target="_blank" rel="sponsored noopener"
+         title="Vampire unter uns!" aria-label="Vampire unter uns! von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <img src="covers/77.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Vampire unter uns!&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gHavquA" target="_blank" rel="sponsored noopener"
+         title="Wo bleibt die Maus?" aria-label="Wo bleibt die Maus? von Dr. Mark Benecke bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #58463F">Wo bleibt die Maus?</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. philipp sandner wissenschaftler die zukunft ist dezentral der blockchain-faktor" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>25</div>
+    <div class="person">
+      <h2>Prof. Dr. Philipp Sandner</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B09C1Z3ih" target="_blank" rel="sponsored noopener"
+         title="Die Zukunft ist dezentral" aria-label="Die Zukunft ist dezentral von Prof. Dr. Philipp Sandner bei Amazon ansehen">
+        
+        <img src="covers/56.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Zukunft ist dezentral&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B04MJWITC" target="_blank" rel="sponsored noopener"
+         title="Der Blockchain-Faktor" aria-label="Der Blockchain-Faktor von Prof. Dr. Philipp Sandner bei Amazon ansehen">
+        
+        <img src="covers/57.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Blockchain-Faktor&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="gert postel ex-krimineller doktorspiele" data-kats="Ex-Krimineller">
+    <div class="folge"><span>Folge</span>22</div>
+    <div class="person">
+      <h2>Gert Postel</h2>
+      <p>Ex-Krimineller</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B02d4ijNP" target="_blank" rel="sponsored noopener"
+         title="Doktorspiele" aria-label="Doktorspiele von Gert Postel bei Amazon ansehen">
+        
+        <img src="covers/55.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Doktorspiele&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="christian lindner politiker schattenjahre" data-kats="Politiker">
+    <div class="folge"><span>Folge</span>16</div>
+    <div class="person">
+      <h2>Christian Lindner</h2>
+      <p>Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B0hrGFBaw" target="_blank" rel="sponsored noopener"
+         title="Schattenjahre" aria-label="Schattenjahre von Christian Lindner bei Amazon ansehen">
+        
+        <img src="covers/51.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Schattenjahre&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="maximilian pollux ex-krimineller influencer gefährliches ego" data-kats="Ex-Krimineller|Influencer">
+    <div class="folge"><span>Folge</span>14</div>
+    <div class="person">
+      <h2>Maximilian Pollux</h2>
+      <p>Ex-Krimineller, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B03NtMljA" target="_blank" rel="sponsored noopener"
+         title="Gefährliches Ego" aria-label="Gefährliches Ego von Maximilian Pollux bei Amazon ansehen">
+        
+        <img src="covers/49.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Gef\u00e4hrliches Ego&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="frank thelen unternehmer 10xdna: mindset for a thriving future startup-dna" data-kats="Unternehmer">
+    <div class="folge"><span>Folge</span>13</div>
+    <div class="person">
+      <h2>Frank Thelen</h2>
+      <p>Unternehmer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B0d7kdpcS" target="_blank" rel="sponsored noopener"
+         title="10xDNA: Mindset for a thriving future" aria-label="10xDNA: Mindset for a thriving future von Frank Thelen bei Amazon ansehen">
+        
+        <img src="covers/46.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;10xDNA: Mindset for a thriving future&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B05zyv4Kq" target="_blank" rel="sponsored noopener"
+         title="Startup-DNA" aria-label="Startup-DNA von Frank Thelen bei Amazon ansehen">
+        
+        <img src="covers/47.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Startup-DNA&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. christian rieck wissenschaftler influencer männersache rasieren spieltheorie: einführung für wirtschafts- und sozialwissenschaftler können roboter mit geld umgehen? spieltheorie: eine einführung spieltheorie im einkauf digni-geld - geld in den zeiten der roboter schummeln mit chatgpt anleitung zur selbstüberlistung der bitcoin-gelduntergang die kunst des perfekten scheiterns die 36 strategeme der krise fürstengeld, fiatgeld, bitcoin" data-kats="Wissenschaftler|Influencer">
+    <div class="folge"><span>Folge</span>10</div>
+    <div class="person">
+      <h2>Prof. Dr. Christian Rieck</h2>
+      <p>Wissenschaftler, Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B0cFrSkKs" target="_blank" rel="sponsored noopener"
+         title="Männersache Rasieren" aria-label="Männersache Rasieren von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3E5C4A">Männersache Rasieren</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gFO8HZP" target="_blank" rel="sponsored noopener"
+         title="Spieltheorie: Einführung für Wirtschafts- und Sozialwissenschaftler" aria-label="Spieltheorie: Einführung für Wirtschafts- und Sozialwissenschaftler von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <img src="covers/31.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Spieltheorie: Einf\u00fchrung f\u00fcr Wirtschafts- und Sozialwissenschaftler&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B03SKIjRd" target="_blank" rel="sponsored noopener"
+         title="Können Roboter mit Geld umgehen?" aria-label="Können Roboter mit Geld umgehen? von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #4A4E69">Können Roboter mit Geld umgehen?</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B03eBM3Ht" target="_blank" rel="sponsored noopener"
+         title="Spieltheorie: Eine Einführung" aria-label="Spieltheorie: Eine Einführung von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <img src="covers/33.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Spieltheorie: Eine Einf\u00fchrung&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0dvWY4wa" target="_blank" rel="sponsored noopener"
+         title="Spieltheorie im Einkauf" aria-label="Spieltheorie im Einkauf von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3D3B5C">Spieltheorie im Einkauf</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0i7hPCUz" target="_blank" rel="sponsored noopener"
+         title="Digni-Geld - Geld in den Zeiten der Roboter" aria-label="Digni-Geld - Geld in den Zeiten der Roboter von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #6B3B3B">Digni-Geld - Geld in den Zeiten der Roboter</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0cDtMdHS" target="_blank" rel="sponsored noopener"
+         title="Schummeln mit ChatGPT" aria-label="Schummeln mit ChatGPT von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <img src="covers/37.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Schummeln mit ChatGPT&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gNjUNod" target="_blank" rel="sponsored noopener"
+         title="Anleitung zur Selbstüberlistung" aria-label="Anleitung zur Selbstüberlistung von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <img src="covers/38.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Anleitung zur Selbst\u00fcberlistung&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0hvmi5Dx" target="_blank" rel="sponsored noopener"
+         title="Der Bitcoin-Gelduntergang" aria-label="Der Bitcoin-Gelduntergang von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <img src="covers/39.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Bitcoin-Gelduntergang&#34;,style:'background:#58463F'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B00b4SqIo" target="_blank" rel="sponsored noopener"
+         title="Die Kunst des perfekten Scheiterns" aria-label="Die Kunst des perfekten Scheiterns von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #58463F">Die Kunst des perfekten Scheiterns</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gAELbFF" target="_blank" rel="sponsored noopener"
+         title="Die 36 Strategeme der Krise" aria-label="Die 36 Strategeme der Krise von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #5B4A2E">Die 36 Strategeme der Krise</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0iaYbFPZ" target="_blank" rel="sponsored noopener"
+         title="Fürstengeld, Fiatgeld, Bitcoin" aria-label="Fürstengeld, Fiatgeld, Bitcoin von Prof. Dr. Christian Rieck bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #6B3B3B">Fürstengeld, Fiatgeld, Bitcoin</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="jürgen todenhöfer journalist politiker andy und marwa. zwei kinder und der krieg warum tötest du, zaid? du sollst nicht töten inside is - 10 tage im &#39;islamischen staat&#39; die große heuchelei der aufstand des anstands und folgt dir keiner, geh allein" data-kats="Journalist|Politiker">
+    <div class="folge"><span>Folge</span>8</div>
+    <div class="person">
+      <h2>Jürgen Todenhöfer</h2>
+      <p>Journalist, Politiker</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B01J40LTo" target="_blank" rel="sponsored noopener"
+         title="Andy und Marwa. Zwei Kinder und der Krieg" aria-label="Andy und Marwa. Zwei Kinder und der Krieg von Jürgen Todenhöfer bei Amazon ansehen">
+        
+        <img src="covers/23.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Andy und Marwa. Zwei Kinder und der Krieg&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B04Y4Wez2" target="_blank" rel="sponsored noopener"
+         title="Warum tötest du, Zaid?" aria-label="Warum tötest du, Zaid? von Jürgen Todenhöfer bei Amazon ansehen">
+        
+        <img src="covers/24.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Warum t\u00f6test du, Zaid?&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B03jOWPSB" target="_blank" rel="sponsored noopener"
+         title="Du sollst nicht töten" aria-label="Du sollst nicht töten von Jürgen Todenhöfer bei Amazon ansehen">
+        
+        <img src="covers/25.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Du sollst nicht t\u00f6ten&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0eczFYza" target="_blank" rel="sponsored noopener"
+         title="Inside IS - 10 Tage im &#39;Islamischen Staat&#39;" aria-label="Inside IS - 10 Tage im &#39;Islamischen Staat&#39; von Jürgen Todenhöfer bei Amazon ansehen">
+        
+        <img src="covers/26.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Inside IS - 10 Tage im \u0027Islamischen Staat\u0027&#34;,style:'background:#2B3A67'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0iDZpHIh" target="_blank" rel="sponsored noopener"
+         title="Die große Heuchelei" aria-label="Die große Heuchelei von Jürgen Todenhöfer bei Amazon ansehen">
+        
+        <img src="covers/27.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die gro\u00dfe Heuchelei&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gVMT1Iy" target="_blank" rel="sponsored noopener"
+         title="Der Aufstand des Anstands" aria-label="Der Aufstand des Anstands von Jürgen Todenhöfer bei Amazon ansehen">
+        
+        <img src="covers/28.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Der Aufstand des Anstands&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0bKPj8Sg" target="_blank" rel="sponsored noopener"
+         title="Und folgt Dir keiner, geh allein" aria-label="Und folgt Dir keiner, geh allein von Jürgen Todenhöfer bei Amazon ansehen">
+        
+        <img src="covers/29.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Und folgt Dir keiner, geh allein&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="reiner laux ex-krimineller hinter blauen augen seele auf eis" data-kats="Ex-Krimineller">
+    <div class="folge"><span>Folge</span>7</div>
+    <div class="person">
+      <h2>Reiner Laux</h2>
+      <p>Ex-Krimineller</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B0fqICRQb" target="_blank" rel="sponsored noopener"
+         title="Hinter blauen Augen" aria-label="Hinter blauen Augen von Reiner Laux bei Amazon ansehen">
+        
+        <img src="covers/20.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Hinter blauen Augen&#34;,style:'background:#3E5C4A'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B02ZEXIBM" target="_blank" rel="sponsored noopener"
+         title="Seele auf Eis" aria-label="Seele auf Eis von Reiner Laux bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #4A4E69">Seele auf Eis</span>
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="montanablack influencer montanablack montanablack ii" data-kats="Influencer">
+    <div class="folge"><span>Folge</span>5</div>
+    <div class="person">
+      <h2>Montanablack</h2>
+      <p>Influencer</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B05DpGQZA" target="_blank" rel="sponsored noopener"
+         title="MontanaBlack" aria-label="MontanaBlack von Montanablack bei Amazon ansehen">
+        
+        <img src="covers/18.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;MontanaBlack&#34;,style:'background:#4A4E69'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0gkv1jud" target="_blank" rel="sponsored noopener"
+         title="MontanaBlack II" aria-label="MontanaBlack II von Montanablack bei Amazon ansehen">
+        
+        <img src="covers/19.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;MontanaBlack II&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="florian homm unternehmer ex-krimineller die kunst des leerverkaufes die prinzipien des wohlstands der crash ist da erfolg im crash endspiel 225 jahre knast kopf geld jagd" data-kats="Unternehmer|Ex-Krimineller">
+    <div class="folge"><span>Folge</span>4</div>
+    <div class="person">
+      <h2>Florian Homm</h2>
+      <p>Unternehmer, Ex-Krimineller</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B00rssomo" target="_blank" rel="sponsored noopener"
+         title="Die Kunst des Leerverkaufes" aria-label="Die Kunst des Leerverkaufes von Florian Homm bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #58463F">Die Kunst des Leerverkaufes</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0cEYvaAY" target="_blank" rel="sponsored noopener"
+         title="Die Prinzipien des Wohlstands" aria-label="Die Prinzipien des Wohlstands von Florian Homm bei Amazon ansehen">
+        
+        <img src="covers/12.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Die Prinzipien des Wohlstands&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0diwCsm4" target="_blank" rel="sponsored noopener"
+         title="Der Crash ist da" aria-label="Der Crash ist da von Florian Homm bei Amazon ansehen">
+        
+        <span class="ersatz" style="background: #3E5C4A">Der Crash ist da</span>
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B00U1YJNO" target="_blank" rel="sponsored noopener"
+         title="Erfolg im Crash" aria-label="Erfolg im Crash von Florian Homm bei Amazon ansehen">
+        
+        <img src="covers/14.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Erfolg im Crash&#34;,style:'background:#3D3B5C'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B01ePTVmU" target="_blank" rel="sponsored noopener"
+         title="Endspiel" aria-label="Endspiel von Florian Homm bei Amazon ansehen">
+        
+        <img src="covers/15.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Endspiel&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B05GbkTtZ" target="_blank" rel="sponsored noopener"
+         title="225 Jahre Knast" aria-label="225 Jahre Knast von Florian Homm bei Amazon ansehen">
+        
+        <img src="covers/16.png" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;225 Jahre Knast&#34;,style:'background:#2F5D6B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B026sQW2k" target="_blank" rel="sponsored noopener"
+         title="Kopf Geld Jagd" aria-label="Kopf Geld Jagd von Florian Homm bei Amazon ansehen">
+        
+        <img src="covers/17.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Kopf Geld Jagd&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <article class="gast" data-such="prof. dr. wolfgang schöllhorn wissenschaftler systemdynamische betrachtung komplexer bewegungsmuster im lernprozeß eine sprint- und laufschule für alle sportarten schneller sprinten und laufen in allen sportarten differential learning in physiotherapy" data-kats="Wissenschaftler">
+    <div class="folge"><span>Folge</span>3</div>
+    <div class="person">
+      <h2>Prof. Dr. Wolfgang Schöllhorn</h2>
+      <p>Wissenschaftler</p>
+    </div>
+    <div class="regal">
+      
+      <a class="buch" href="https://link.amazon/B08XQUtOT" target="_blank" rel="sponsored noopener"
+         title="Systemdynamische Betrachtung komplexer Bewegungsmuster im Lernprozeß" aria-label="Systemdynamische Betrachtung komplexer Bewegungsmuster im Lernprozeß von Prof. Dr. Wolfgang Schöllhorn bei Amazon ansehen">
+        
+        <img src="covers/7.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Systemdynamische Betrachtung komplexer Bewegungsmuster im Lernproze\u00df&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0dXytH6Q" target="_blank" rel="sponsored noopener"
+         title="Eine Sprint- und Laufschule für alle Sportarten" aria-label="Eine Sprint- und Laufschule für alle Sportarten von Prof. Dr. Wolfgang Schöllhorn bei Amazon ansehen">
+        
+        <img src="covers/8.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Eine Sprint- und Laufschule f\u00fcr alle Sportarten&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B04FcYl9k" target="_blank" rel="sponsored noopener"
+         title="Schneller Sprinten und Laufen in allen Sportarten" aria-label="Schneller Sprinten und Laufen in allen Sportarten von Prof. Dr. Wolfgang Schöllhorn bei Amazon ansehen">
+        
+        <img src="covers/9.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Schneller Sprinten und Laufen in allen Sportarten&#34;,style:'background:#6B3B3B'}))">
+        
+      </a>
+      
+      <a class="buch" href="https://link.amazon/B0fvz4nmq" target="_blank" rel="sponsored noopener"
+         title="Differential Learning in Physiotherapy" aria-label="Differential Learning in Physiotherapy von Prof. Dr. Wolfgang Schöllhorn bei Amazon ansehen">
+        
+        <img src="covers/10.jpg" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:&#34;Differential Learning in Physiotherapy&#34;,style:'background:#5B4A2E'}))">
+        
+      </a>
+      
+    </div>
+  </article>
+  
+  <div class="leer" id="leer" hidden>
+    Zu deiner Suche gibt es keinen Gast. <button type="button" id="zuruecksetzen">Suche zurücksetzen</button>
+  </div>
+</section>
+
+</main>
+<footer class="fuss">
+  <div class="rahmen">
+    <p>Als Amazon-Partner verdiene ich an qualifizierten Verkäufen. Für dich ändert sich am Preis nichts.</p>
+    <p>Die Buchcover stammen von Google Books und Open Library.</p>
+    <nav aria-label="Rechtliches">
+      <a href="impressum.html">Impressum</a>
+      <a href="datenschutz.html">Datenschutz</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var suche = document.getElementById('suche');
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var gaeste = Array.prototype.slice.call(document.querySelectorAll('.gast'));
+  var stand = document.getElementById('stand');
+  var leer = document.getElementById('leer');
+  var kat = '';
+
+  function filtern() {
+    var woerter = suche.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    var sichtbar = 0;
+    gaeste.forEach(function (g) {
+      var text = g.getAttribute('data-such');
+      var passt = woerter.every(function (w) { return text.indexOf(w) !== -1; }) &&
+        (!kat || g.getAttribute('data-kats').split('|').indexOf(kat) !== -1);
+      g.hidden = !passt;
+      if (passt) sichtbar++;
+    });
+    stand.textContent = sichtbar === 1 ? '1 Gast' : sichtbar + ' Gäste';
+    leer.hidden = sichtbar !== 0;
+  }
+
+  suche.addEventListener('input', filtern);
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      kat = c.getAttribute('data-kat');
+      chips.forEach(function (x) { x.setAttribute('aria-pressed', x === c ? 'true' : 'false'); });
+      filtern();
+    });
+  });
+  document.getElementById('zuruecksetzen').addEventListener('click', function () {
+    suche.value = ''; chips[0].click(); suche.focus();
+  });
+})();
+</script>
+
+</body>
+</html>
