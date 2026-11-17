@@ -58,3 +58,20 @@ Bücher in größerer Menge: `pflege/buecher_update.py` (Folge → Titel-Liste).
 Kategorien: Influencer, Unternehmer, Wissenschaftler, Arzt, Sportler, Politiker,
 Journalist, Musiker, Entertainer, Autor, Ex-Krimineller, Sicherheit & Militär,
 Jurist, Abenteurer, Aktivist.
+
+## Öffentliche Seite (online stellen)
+
+Besucher sehen eine eigene Seite ohne Bearbeiten-Funktionen. Die Bearbeitungsansicht
+(`python app.py`) bleibt auf deinem Rechner und geht nicht online.
+
+1. **Impressum eintragen:** In `seite.py` Name, Anschrift und E-Mail ausfüllen.
+   Die Datenschutzerklärung (`templates/datenschutz.html`) ist eine Vorlage – bitte prüfen.
+2. **Vorschau ansehen:** App starten und `http://127.0.0.1:5000/vorschau` öffnen.
+3. **Exportieren:** `python pflege/seite_exportieren.py`
+   – erzeugt `docs/` mit der fertigen Seite und lädt alle Cover nach `docs/covers/`.
+4. **Hochladen:** `docs/` committen und pushen.
+5. **Einmalig GitHub Pages einschalten:** Repo → Settings → Pages →
+   „Deploy from a branch“, Branch `master`, Ordner `/docs`.
+   Die Seite ist dann unter `https://chr1s21.github.io/PodcastBooks/` erreichbar.
+
+Nach jeder Änderung an Büchern oder Gästen: Schritt 3 und 4 wiederholen.

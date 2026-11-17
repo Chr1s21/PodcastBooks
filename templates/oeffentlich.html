@@ -1,0 +1,165 @@
+{% extends "oeffentlich_basis.html" %}
+
+{% block stil %}
+  .einstieg { padding-top: 3.5rem; padding-bottom: 2rem; }
+  .einstieg h1 {
+    font-size: clamp(2.5rem, 7vw, 5.25rem); line-height: 0.98; letter-spacing: -0.035em;
+    font-weight: 800; margin: 0; max-width: 12ch;
+  }
+  .einstieg p { font-size: 1.15rem; color: var(--gedaempft); max-width: 46ch; margin: 1.25rem 0 0; }
+
+  .werkzeug { position: sticky; top: 0; z-index: 2; background: var(--grund); padding: 1rem 0 0.75rem; }
+  .suche {
+    width: 100%; max-width: 36rem; font: inherit; font-size: 1.1rem; color: var(--tinte);
+    padding: 0.8rem 1rem; border: 2px solid var(--tinte); border-radius: 6px; background: var(--flaeche);
+  }
+  .suche::placeholder { color: #8A90A8; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.85rem; }
+  .chip {
+    font: inherit; font-size: 0.9rem; cursor: pointer; color: var(--tinte);
+    padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid var(--linie); background: var(--flaeche);
+  }
+  .chip:hover { border-color: var(--tinte); }
+  .chip[aria-pressed="true"] { background: var(--signal); border-color: var(--signal); font-weight: 600; }
+  .stand { color: var(--gedaempft); font-size: 0.9rem; margin: 0.75rem 0 0; }
+
+  .gast {
+    display: grid; grid-template-columns: 4.5rem 14rem minmax(0, 1fr); gap: 0 1.5rem;
+    align-items: end; padding: 2.75rem 0 0;
+  }
+  .folge {
+    font-size: 2.6rem; font-weight: 300; line-height: 1; color: var(--gedaempft);
+    font-variant-numeric: tabular-nums; text-align: right; padding-bottom: 1.1rem;
+  }
+  .folge span { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.2rem; }
+  .person { padding-bottom: 1.1rem; }
+  .person h2 { font-size: 1.25rem; line-height: 1.2; margin: 0 0 0.3rem; letter-spacing: -0.01em; }
+  .person p { margin: 0; color: var(--gedaempft); font-size: 0.9rem; }
+
+  .regal {
+    display: flex; align-items: flex-end; gap: 0.9rem; overflow-x: auto;
+    padding: 0.5rem 0.75rem 0; border-bottom: 10px solid var(--regal);
+    box-shadow: 0 12px 10px -10px rgba(26, 31, 58, 0.35);
+    scrollbar-width: thin;
+  }
+  .buch { flex: 0 0 auto; display: block; text-decoration: none; transform-origin: bottom center; }
+  .buch img, .ersatz {
+    display: block; height: 9.5rem; width: auto; max-width: 8rem; min-width: 5.5rem;
+    box-shadow: 2px 0 0 rgba(0,0,0,0.08), 0 1px 3px rgba(26,31,58,0.25);
+  }
+  .buch img { object-fit: cover; background: #fff; }
+  .ersatz {
+    width: 6.4rem; color: #fff; padding: 0.7rem 0.6rem; overflow: hidden;
+    font: 600 0.82rem/1.25 var(--serif); hyphens: auto; -webkit-hyphens: auto;
+    border-left: 5px solid rgba(255,255,255,0.18);
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6;
+  }
+  .buch:hover { transform: translateY(-4px); }
+  .buch:focus-visible { outline-offset: 4px; }
+  @media (prefers-reduced-motion: no-preference) { .buch { transition: transform 120ms ease-out; } }
+
+  .leer { padding: 3rem 0; font-size: 1.1rem; }
+  .leer button { font: inherit; background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; color: inherit; }
+
+  @media (max-width: 760px) {
+    .gast { grid-template-columns: auto minmax(0, 1fr); gap: 0 0.9rem; padding-top: 2.25rem; }
+    .folge { font-size: 1.6rem; padding-bottom: 0.75rem; align-self: end; }
+    .person { padding-bottom: 0.75rem; }
+    .regal { grid-column: 1 / -1; margin: 0 -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem; }
+    .buch img, .ersatz { height: 8.25rem; }
+    .ersatz { width: 5.6rem; -webkit-line-clamp: 5; }
+    .chips { flex-wrap: nowrap; overflow-x: auto; margin-left: -1.5rem; margin-right: -1.5rem;
+             padding: 0 1.5rem 0.25rem; scrollbar-width: none; }
+    .chip { flex: 0 0 auto; }
+    .einstieg { padding-top: 2.5rem; padding-bottom: 1rem; }
+  }
+{% endblock %}
+
+{% block inhalt %}
+<section class="einstieg rahmen">
+  <h1>Die Bücher der Gäste</h1>
+  <p>{{ daten.anzahl_buecher }} Bücher, geschrieben von {{ daten.anzahl_gaeste }} Gästen des Tim Gabel Podcast. Ein Klick aufs Cover führt zum Buch bei Amazon.</p>
+</section>
+
+<div class="werkzeug">
+  <div class="rahmen">
+    <label for="suche" class="unsichtbar" style="position:absolute;left:-9999px">Suchen</label>
+    <input id="suche" class="suche" type="search" autocomplete="off"
+           placeholder="Gast, Buchtitel oder Thema suchen">
+    <div class="chips" role="group" aria-label="Nach Bereich filtern">
+      <button class="chip" type="button" data-kat="" aria-pressed="true">Alle</button>
+      {% for k in daten.kategorien %}
+      <button class="chip" type="button" data-kat="{{ k }}" aria-pressed="false">{{ k }}</button>
+      {% endfor %}
+    </div>
+    <p class="stand" id="stand" aria-live="polite">{{ daten.anzahl_gaeste }} Gäste</p>
+  </div>
+</div>
+
+<section class="rahmen" id="liste">
+  {% for g in daten.gaeste %}
+  <article class="gast" data-such="{{ g.suchtext }}" data-kats="{{ g.kategorien|join('|') }}">
+    <div class="folge"><span>Folge</span>{{ g.folge }}</div>
+    <div class="person">
+      <h2>{{ g.name }}</h2>
+      <p>{{ g.kategorien|join(', ') }}</p>
+    </div>
+    <div class="regal">
+      {% for b in g.buecher %}
+      <a class="buch" href="{{ b.link }}" target="_blank" rel="sponsored noopener"
+         title="{{ b.titel }}" aria-label="{{ b.titel }} von {{ g.name }} bei Amazon ansehen">
+        {% if b.cover %}
+        <img src="{{ b.cover }}" alt="" loading="lazy" decoding="async"
+             onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ersatz',textContent:{{ b.titel|tojson|forceescape }},style:'background:{{ b.farbe }}'}))">
+        {% else %}
+        <span class="ersatz" style="background: {{ b.farbe }}">{{ b.titel }}</span>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </article>
+  {% endfor %}
+  <div class="leer" id="leer" hidden>
+    Zu deiner Suche gibt es keinen Gast. <button type="button" id="zuruecksetzen">Suche zurücksetzen</button>
+  </div>
+</section>
+{% endblock %}
+
+{% block skript %}
+<script>
+(function () {
+  var suche = document.getElementById('suche');
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var gaeste = Array.prototype.slice.call(document.querySelectorAll('.gast'));
+  var stand = document.getElementById('stand');
+  var leer = document.getElementById('leer');
+  var kat = '';
+
+  function filtern() {
+    var woerter = suche.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    var sichtbar = 0;
+    gaeste.forEach(function (g) {
+      var text = g.getAttribute('data-such');
+      var passt = woerter.every(function (w) { return text.indexOf(w) !== -1; }) &&
+        (!kat || g.getAttribute('data-kats').split('|').indexOf(kat) !== -1);
+      g.hidden = !passt;
+      if (passt) sichtbar++;
+    });
+    stand.textContent = sichtbar === 1 ? '1 Gast' : sichtbar + ' Gäste';
+    leer.hidden = sichtbar !== 0;
+  }
+
+  suche.addEventListener('input', filtern);
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      kat = c.getAttribute('data-kat');
+      chips.forEach(function (x) { x.setAttribute('aria-pressed', x === c ? 'true' : 'false'); });
+      filtern();
+    });
+  });
+  document.getElementById('zuruecksetzen').addEventListener('click', function () {
+    suche.value = ''; chips[0].click(); suche.focus();
+  });
+})();
+</script>
+{% endblock %}

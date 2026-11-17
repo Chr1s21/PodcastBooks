@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from cover_suche import (finde_buchdaten, cover_von_olid, buecher_von_autor,
                          google_pausiert, openlibrary_pausiert, QuelleGesperrt, _norm)
 from amazon import partner_link, dp_link, ist_suchlink, autor_sauber
+from seite import SEITE, oeffentliche_daten, impressum_fehlt
 
 app = Flask(__name__)
 
@@ -116,6 +117,37 @@ def home():
         meldung=meldung,
         alle_kategorien=alle_kategorien,
     )
+
+
+# ---------------- ÖFFENTLICHE SEITE (Vorschau) ----------------
+# So sehen Besucher die Seite. Online geht sie als statischer Export
+# (python pflege/seite_exportieren.py), nicht über diese App.
+
+VORSCHAU_PFADE = {"start": "/vorschau", "impressum": "/vorschau/impressum",
+                  "datenschutz": "/vorschau/datenschutz"}
+
+
+def _vorschau(vorlage):
+    conn = get_db_connection()
+    daten = oeffentliche_daten(conn)
+    conn.close()
+    return render_template(vorlage, daten=daten, seite=SEITE, pfade=VORSCHAU_PFADE,
+                           impressum_fehlt=impressum_fehlt(), fremde_cover=True)
+
+
+@app.route("/vorschau")
+def vorschau():
+    return _vorschau("oeffentlich.html")
+
+
+@app.route("/vorschau/impressum")
+def vorschau_impressum():
+    return _vorschau("impressum.html")
+
+
+@app.route("/vorschau/datenschutz")
+def vorschau_datenschutz():
+    return _vorschau("datenschutz.html")
 
 
 # ---------------- AUTOREN ----------------
