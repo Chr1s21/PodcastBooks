@@ -45,21 +45,28 @@ def _lade_env_datei():
 
 _lade_env_datei()
 
-TIMEOUT = 8
+TIMEOUT = 8               # Google antwortet schnell
+TIMEOUT_OPENLIBRARY = 20  # Open Library braucht oft deutlich länger
 HEADERS = {"User-Agent": "PodcastBuecher/1.0 (privates Projekt)"}
 GOOGLE_API_KEY = os.environ.get("GOOGLE_BOOKS_API_KEY", "").strip()
 
-# Bis zu diesem Zeitpunkt (time.time()) wird Google nicht mehr gefragt
+# Bis zu diesem Zeitpunkt (time.time()) wird die Quelle nicht mehr gefragt
 _google_pause_bis = 0.0
 GOOGLE_PAUSE_SEKUNDEN = 120
+_ol_pause_bis = 0.0
+_ol_timeouts_in_folge = 0
+OL_PAUSE_SEKUNDEN = 120
 
 # Titel/Präfixe, die als Autor-Suchbegriff nichts taugen
 _AUTOR_PRAEFIXE = re.compile(r"\b(Prof\.|Dr\.|med\.|Dipl\.|-Ing\.)\s*", re.IGNORECASE)
 _PART = re.compile(r"\s+Part\s+\d+\s*$", re.IGNORECASE)
 
 
-class GoogleGesperrt(Exception):
+class QuelleGesperrt(Exception):
     pass
+
+
+GoogleGesperrt = QuelleGesperrt  # alter Name
 
 
 def google_pausiert():
@@ -67,9 +74,13 @@ def google_pausiert():
     return time.time() < _google_pause_bis
 
 
-def _get_json(url):
+def openlibrary_pausiert():
+    return time.time() < _ol_pause_bis
+
+
+def _get_json(url, timeout=TIMEOUT):
     req = urllib.request.Request(url, headers=HEADERS)
-    with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
 
@@ -125,11 +136,25 @@ def _google_cover(titel, autor=None):
 # ---------------- Open Library ----------------
 
 def _openlibrary_cover(titel, autor=None):
+    global _ol_pause_bis, _ol_timeouts_in_folge
+    if openlibrary_pausiert():
+        raise QuelleGesperrt()
     params = {"title": titel, "limit": 5, "fields": "cover_i"}
     if autor:
         params["author"] = autor
     url = "https://openlibrary.org/search.json?" + urllib.parse.urlencode(params)
-    daten = _get_json(url)
+    try:
+        daten = _get_json(url, timeout=TIMEOUT_OPENLIBRARY)
+        _ol_timeouts_in_folge = 0
+    except (TimeoutError, urllib.error.URLError) as e:
+        _ol_timeouts_in_folge += 1
+        if _ol_timeouts_in_folge >= 3:
+            _ol_pause_bis = time.time() + OL_PAUSE_SEKUNDEN
+            _ol_timeouts_in_folge = 0
+            print(f"[Cover-Suche] Open Library antwortet nicht (3x Zeitüberschreitung) – "
+                  f"pausiere Open Library für {OL_PAUSE_SEKUNDEN}s.")
+            raise QuelleGesperrt()
+        raise
     for doc in daten.get("docs", []):
         if doc.get("cover_i"):
             return f"https://covers.openlibrary.org/b/id/{doc['cover_i']}-L.jpg"
@@ -168,7 +193,7 @@ def finde_cover(titel, autor=None):
             url = funktion(t, a)
             if url:
                 return url
-        except GoogleGesperrt:
+        except QuelleGesperrt:
             continue  # leise überspringen, Meldung kam schon einmal
         except Exception as e:  # Netzwerkfehler usw. -> nächste Quelle
             print(f"[Cover-Suche] {funktion.__name__}({t!r}, {a!r}) fehlgeschlagen: {e}")
