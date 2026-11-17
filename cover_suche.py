@@ -6,9 +6,9 @@ Quellen:
   2. Open Library (Fallback, ohne Limit-Probleme)
 
 Google Books erlaubt ohne API-Schlüssel nur wenige Anfragen pro Minute.
-Optional einen kostenlosen Schlüssel als Umgebungsvariable setzen:
-    Windows (PowerShell):  $env:GOOGLE_BOOKS_API_KEY="dein-schluessel"
-    Mac/Linux:             export GOOGLE_BOOKS_API_KEY="dein-schluessel"
+Optional einen kostenlosen Schlüssel in die Datei .env im Projektordner
+schreiben (wird automatisch geladen, ist per .gitignore vom Repo ausgeschlossen):
+    GOOGLE_BOOKS_API_KEY=dein-schluessel
 Schlüssel anlegen: https://console.cloud.google.com/apis/credentials
 (vorher „Books API“ aktivieren). Damit sind ~1000 Anfragen/Tag frei.
 
@@ -25,6 +25,25 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+
+def _lade_env_datei():
+    """Liest KEY=WERT-Zeilen aus .env (im Projektordner) in os.environ.
+    Bereits gesetzte Umgebungsvariablen haben Vorrang."""
+    pfad = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+    if not os.path.exists(pfad):
+        return
+    with open(pfad, encoding="utf-8-sig") as f:
+        for zeile in f:
+            zeile = zeile.strip()
+            if not zeile or zeile.startswith("#") or "=" not in zeile:
+                continue
+            key, wert = zeile.split("=", 1)
+            key = key.strip().removeprefix("export ").strip()
+            wert = wert.strip().strip('"').strip("'")
+            os.environ.setdefault(key, wert)
+
+
+_lade_env_datei()
 
 TIMEOUT = 8
 HEADERS = {"User-Agent": "PodcastBuecher/1.0 (privates Projekt)"}
