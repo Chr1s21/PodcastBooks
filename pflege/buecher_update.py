@@ -59,7 +59,7 @@ BUECHER = {
     167: ["Mythos Geldknappheit"],                                                  # Maurice Höfgen
     181: ["Differenziertes Krafttraining mit Schwerpunkt Wirbelsäule"],             # Axel Gottlob
     195: ["Illegale Kriege", "NATO-Geheimarmeen in Europa", "Imperium USA"],        # Daniele Ganser
-    197: ["Chinas Bosse", "Shenzhen – Die Weltwirtschaft von morgen"],              # Wolfgang Hirn
+    197: ["Chinas Bosse", "Shenzhen"],              # Wolfgang Hirn
     201: ["Das trügerische Gedächtnis", "Böse", "Bi", "Green Crime"],               # Julia Shaw
     203: ["Hitlers erster Krieg", "Wie Adolf Hitler zum Nazi wurde"],               # Thomas Weber
     205: ["Die Getriebenen", "Machtverfall", "Letzte Chance"],                      # Robin Alexander
@@ -109,6 +109,53 @@ BUECHER.update({
 BUECHER[239] = BUECHER[239] + ["Lernen"]                                         # Manfred Spitzer
 BUECHER[166] = BUECHER[166] + ["Iran: Der falsche Krieg"]                        # Michael Lüders
 
+# ---- Runde 4: Blöcke 61–210 geprüft und abgesegnet ----
+RUNDE_4 = {
+    68: ["My Miracle Mindset"],                                                   # Urs Kalecinski
+    69: ["Shaolin Spirit"],                                                       # Shi Heng Yi
+    71: ["Die Arthrose-Sprechstunde"],                                            # Markus Klingenberg
+    77: ["Green Power"],                                                          # Paul Unterleitner
+    79: ["Meisterkurs Rhetorik", "Meisterkurs Schlagfertigkeit"],                 # Redefabrik
+    81: ["Ich höre dich"],                                                        # Veronika Wolter
+    82: ["Let's rock education", "Der Classroom-Coach"],                          # Daniel Jung
+    89: ["Der Protein-Fasten-Trick"],                                             # Christian Wolf
+    90: ["Nach ganz oben"],                                                       # David Döbele
+    93: ["Trail der Träume", "HOMERUN"],                                          # Savas Coban
+    100: ["Becoming Bulletproof"],                                                # Otto Bulletproof
+    101: ["Depressionen bewältigen"],                                             # Ulrich Hegerl
+    102: ["Glück gehabt!!!"],                                                     # Aaron Troschke
+    106: ["Ich! Die Kraft des Narzissmus"],                                       # Mitja Back
+    113: ["Feel good"],                                                           # Doc Felix
+    119: ["Mutproben"],                                                           # Thomas Hitzlsperger
+    127: ["Hypertrophietraining"],                                                # Stephan Geisler
+    132: ["My Way", "Herr Raue reist", "Rezepte aus der Brasserie", "360° Berlin"],  # Tim Raue
+    133: ["Erfolgreich wissenschaftlich investieren"],                            # Andreas Beck
+    138: ["Denk doch, was du willst", "Ich sehe das, was du nicht sagst",
+          "Sag es keinem weiter"],                                                # Thorsten Havener
+    139: ["Und täglich grüßt der Tigervater", "Kartoffelbrei mit Stäbchen"],      # Thomas Derksen
+    140: ["Fitness Sweets", "Mit Meal Prep zur Traumfigur"],                      # Sophia Thiel
+    149: ["Resilienz: Der Wir-Faktor", "Was uns wirklich nährt"],                 # Gregor Hasler
+    160: ["Den Bach rauf"],                                                       # Robert Habeck
+    162: ["Mein Leben in 13 Büchern", "Marx und wir", "Gysi vs. Sonneborn"],      # Gregor Gysi
+    167: ["Teuer!"],                                                              # Maurice Höfgen
+    176: ["Next Level"],                                                          # Philip Hopf
+    186: ["Nimm dir alles, gib viel", "Die Supermilf"],                           # Verona Pooth
+    188: ["Deine Atmung ändert alles!"],                                          # Tom Sietas
+    190: ["Janez"],                                                               # Janez Ekart
+    193: ["Wenn Jugendliche trinken"],                                            # Rainer Thomasius
+    195: ["Europa im Erdölrausch", "Kampf der Giganten"],                         # Daniele Ganser
+    197: ["Der Tech-Krieg", "Herausforderung China"],                             # Wolfgang Hirn
+    198: ["All in"],                                                              # Fedor Holz
+    210: ["Der Profiler", "Im Auftrag der Toten", "Die Psyche des Bösen"],        # Axel Petermann
+}
+for _folge, _titel in RUNDE_4.items():
+    BUECHER[_folge] = BUECHER.get(_folge, []) + _titel
+
+# Titelkorrekturen: (Folge, alter Titel) -> neuer Titel
+UMBENENNEN = {
+    (197, "Shenzhen – Die Weltwirtschaft von morgen"): "Shenzhen",                # Wolfgang Hirn
+}
+
 
 def _norm(text):
     text = unicodedata.normalize("NFKD", text or "").encode("ascii", "ignore").decode()
@@ -126,6 +173,20 @@ def main():
     if "cover_url" not in spalten and not probe:
         conn.execute("ALTER TABLE buecher ADD COLUMN cover_url TEXT")
     gaeste = {r["folge"]: r for r in conn.execute("SELECT * FROM autoren")}
+
+    for (folge, alt), neu_titel in UMBENENNEN.items():
+        gast = gaeste.get(folge)
+        if gast is None:
+            continue
+        for b in conn.execute("SELECT id, link FROM buecher WHERE autor_id=? AND titel=?",
+                              (gast["id"], alt)).fetchall():
+            print(f"  ~ #{folge} {gast['name']}: {alt} -> {neu_titel}")
+            if not probe:
+                link = b["link"]
+                if not link or "amazon.de/s?" in link:
+                    link = such_link(neu_titel, gast["name"])
+                conn.execute("UPDATE buecher SET titel=?, link=? WHERE id=?",
+                             (neu_titel, link, b["id"]))
 
     neu = uebersprungen = 0
     for folge, titel_liste in sorted(BUECHER.items()):
