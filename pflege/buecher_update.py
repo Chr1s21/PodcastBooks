@@ -81,7 +81,22 @@ BUECHER = {
     254: ["Triebhaft – Zwischen Narzissten, Sadisten und Psychopathen"],           # Gilda Giebel
     255: ["Blackout", "Zero", "Helix", "Gier", "°C – Celsius"],                     # Marc Elsberg
     262: ["The Struggle for Democracy in Mainland China, Taiwan and Hong Kong"],    # Andreas Fulda
+    # ---- Runde 2: einzeln recherchiert ----
+    101: ["Das Rätsel Depression", "Depressiv?"],                                 # Ulrich Hegerl
+    140: ["Come back stronger", "Fit & stark mit Sophia", "Einfach schlank und fit"],  # Sophia Thiel
+    159: ["Der perfekte Augenblick", "Das Jochen Schweizer Prinzip", "Die Begegnung",
+          "Warum Menschen fliegen können müssen"],                                # Jochen Schweizer
+    161: ["Gefahr ist mein Beruf"],                                               # Josef Resch
+    168: ["Requiem für die AfD"],                                                 # Frauke Petry
+    169: ["1995 Lichterfelde"],                                                   # Samra
+    248: ["Du bist Mentalist!", "Kennen wir uns?", "99 Mind Hacks",
+          "Sei deiner Zeit voraus"],                                              # Timon Krause
+    251: ["Der Adolf in mir"],                                                    # Serdar Somuncu
 }
+
+# Vielschreiber: weitere Bestseller
+BUECHER[239] = BUECHER[239] + ["Lernen"]                                         # Manfred Spitzer
+BUECHER[166] = BUECHER[166] + ["Iran: Der falsche Krieg"]                        # Michael Lüders
 
 
 def _norm(text):

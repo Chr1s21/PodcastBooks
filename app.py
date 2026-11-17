@@ -382,6 +382,83 @@ def vorschlaege_speichern(autor_id):
                             meldung=f"{anzahl} Bücher für {autor} hinzugefügt."))
 
 
+# ---------------- ALLE GÄSTE PRÜFEN ----------------
+
+PRUEF_BLOCK = 15        # Gäste pro Seite
+MAX_PRO_GAST = 5        # bei Vielschreibern nur die beliebtesten
+
+
+@app.route("/pruefen")
+def pruefen():
+    """Prüft blockweise jeden Gast gegen Google Books und schlägt fehlende Bücher vor."""
+    start = max(int(request.args.get("start", 0) or 0), 0)
+    conn = get_db_connection()
+    alle = conn.execute("SELECT * FROM autoren ORDER BY folge, id").fetchall()
+
+    # Gleiche Person (Part 2, Part 3 …) nur einmal prüfen, Bücher gehören zum ersten Eintrag
+    personen, gesehen = [], {}
+    for a in alle:
+        schluessel = _norm(autor_sauber(a["name"]))
+        if schluessel in gesehen:
+            gesehen[schluessel]["ids"].append(a["id"])
+            continue
+        eintrag = {"autor": a, "ids": [a["id"]]}
+        gesehen[schluessel] = eintrag
+        personen.append(eintrag)
+
+    block = personen[start:start + PRUEF_BLOCK]
+    ergebnisse, fehler = [], None
+    for p in block:
+        ids = p["ids"]
+        vorhandene = {_norm(r["titel"]) for r in conn.execute(
+            f"SELECT titel FROM buecher WHERE autor_id IN ({','.join('?' * len(ids))})", ids)}
+        try:
+            treffer = buecher_von_autor(p["autor"]["name"])
+        except QuelleGesperrt:
+            fehler = ("Google Books bremst gerade. Bitte kurz warten und die Seite neu laden "
+                      "(mit API-Schlüssel in der .env passiert das kaum).")
+            break
+        except Exception as e:
+            fehler = f"Google Books nicht erreichbar: {e}"
+            break
+        neu = [t for t in treffer if _norm(t["titel"]) not in vorhandene]
+        neu.sort(key=lambda t: (not t["exakt"], -t["bewertungen"], not t["isbn10"]))
+        if neu:
+            ergebnisse.append({"autor": p["autor"], "treffer": neu[:MAX_PRO_GAST],
+                               "weitere": max(len(neu) - MAX_PRO_GAST, 0)})
+        time.sleep(0.3)
+    conn.close()
+
+    weiter = start + PRUEF_BLOCK if start + PRUEF_BLOCK < len(personen) else None
+    return render_template("pruefen.html", ergebnisse=ergebnisse, fehler=fehler,
+                           start=start, ende=min(start + PRUEF_BLOCK, len(personen)),
+                           gesamt=len(personen), weiter=weiter, block=block)
+
+
+@app.route("/pruefen", methods=["POST"])
+def pruefen_speichern():
+    conn = get_db_connection()
+    anzahl = 0
+    for wert in request.form.getlist("buch"):
+        # Format: autor_id|isbn10|cover|titel
+        teile = (wert.split("|", 3) + ["", "", "", ""])[:4]
+        autor_id, isbn10, cover, titel = teile
+        if not (autor_id and titel):
+            continue
+        autor = autor_name(conn, autor_id)
+        conn.execute(
+            "INSERT INTO buecher (titel, link, olid, cover_url, autor_id) VALUES (?, ?, '', ?, ?)",
+            (titel, partner_link(titel, autor, isbn10 or None), cover or None, autor_id),
+        )
+        anzahl += 1
+    conn.commit()
+    conn.close()
+    weiter = request.form.get("weiter")
+    if weiter:
+        return redirect(url_for("pruefen", start=weiter))
+    return redirect(url_for("home", meldung=f"Prüfung fertig – zuletzt {anzahl} Bücher hinzugefügt."))
+
+
 # Läuft auch beim Start über "flask run"
 init_db()
 

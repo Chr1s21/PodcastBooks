@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alle Gäste prüfen</title>
+    <style>
+        body { font-family: sans-serif; max-width: 1000px; margin: 40px auto; padding: 20px; line-height: 1.5; background-color: #f4f6f9; color: #333; }
+        .box { background: white; padding: 18px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 18px; }
+        .hinweis { color: #718096; font-size: 0.9em; }
+        .fehler { background: #fde2e1; color: #8a1c1c; padding: 10px 15px; border-radius: 6px; }
+        .fortschritt { background: #e2e8f0; border-radius: 6px; height: 10px; overflow: hidden; margin: 8px 0 4px; }
+        .fortschritt div { background: #28a745; height: 100%; }
+        h3 { margin: 0 0 10px; color: #007BFF; }
+        .liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+        label.karte { display: flex; gap: 10px; border: 2px solid #eee; border-radius: 8px; padding: 8px; background: #fafafa; cursor: pointer; }
+        label.karte:has(input:checked) { border-color: #28a745; background: #f0fff4; }
+        .mini-cover { width: 45px; height: 66px; object-fit: contain; background: #e2e8f0; border-radius: 3px; flex-shrink: 0; }
+        .titel { font-weight: bold; font-size: 0.85em; }
+        .meta { font-size: 0.72em; color: #718096; }
+        .warnung { color: #b7791f; }
+        .leiste { position: sticky; bottom: 0; background: #f4f6f9; padding: 12px 0; display: flex; gap: 10px; align-items: center; }
+        button { background-color: #28a745; color: white; padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; }
+        button.grau { background-color: #6c757d; }
+        a { color: #007BFF; }
+    </style>
+</head>
+<body>
+    <p><a href="/">← zurück zur Bibliothek</a></p>
+    <div class="box">
+        <h2 style="margin-top:0;">🔎 Alle Gäste prüfen</h2>
+        <p class="hinweis">
+            Jeder Gast wird bei Google Books nachgeschlagen. Gezeigt werden nur Bücher, die noch fehlen –
+            pro Gast die bis zu {{ 5 }} beliebtesten. <b>Vorausgewählt</b> sind Treffer, bei denen der Autorname
+            exakt passt. Haken bei Namensvettern, Sammelbänden oder Fachartikeln einfach entfernen.
+        </p>
+        <div class="fortschritt"><div style="width: {{ (ende / gesamt * 100)|round(1) }}%"></div></div>
+        <span class="meta">Gäste {{ start + 1 }}–{{ ende }} von {{ gesamt }} geprüft:
+            {% for p in block %}{{ p.autor['name'] }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+    </div>
+
+    {% if fehler %}<p class="fehler">{{ fehler }}</p>{% endif %}
+
+    <form method="POST">
+        {% if weiter %}<input type="hidden" name="weiter" value="{{ weiter }}">{% endif %}
+
+        {% if not ergebnisse and not fehler %}
+            <div class="box">In diesem Block fehlen keine Bücher – oder die Gäste haben keine geschrieben.</div>
+        {% endif %}
+
+        {% for e in ergebnisse %}
+            <div class="box">
+                <h3>{% if e.autor['folge'] %}#{{ e.autor['folge'] }} {% endif %}{{ e.autor['name'] }}</h3>
+                <div class="liste">
+                    {% for t in e.treffer %}
+                        <label class="karte">
+                            <input type="checkbox" name="buch" {% if t.exakt %}checked{% endif %}
+                                   value="{{ e.autor['id'] }}|{{ t.isbn10 or '' }}|{{ t.cover or '' }}|{{ t.titel }}">
+                            {% if t.cover %}<img class="mini-cover" src="{{ t.cover }}" alt="" loading="lazy">
+                            {% else %}<span class="mini-cover"></span>{% endif %}
+                            <span>
+                                <span class="titel">{{ t.titel }}</span><br>
+                                <span class="meta">{{ t.autoren }}{% if t.jahr %} · {{ t.jahr }}{% endif %}</span><br>
+                                {% if t.bewertungen %}<span class="meta">★ {{ t.bewertungen }} Bewertungen</span><br>{% endif %}
+                                {% if not t.exakt %}<span class="meta warnung">Name nicht exakt – prüfen</span>{% endif %}
+                            </span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {% if e.weitere %}<p class="meta">+ {{ e.weitere }} weitere – alle über „📚 Bücher vorschlagen“ beim Gast.</p>{% endif %}
+            </div>
+        {% endfor %}
+
+        <div class="leiste">
+            {% if weiter %}
+                <button type="submit">Ausgewählte speichern &amp; nächste {{ 15 }} Gäste →</button>
+            {% else %}
+                <button type="submit">Ausgewählte speichern &amp; fertig</button>
+            {% endif %}
+            {% if start > 0 %}<a href="/pruefen?start={{ start - 15 if start >= 15 else 0 }}">← zurück</a>{% endif %}
+        </div>
+    </form>
+</body>
+</html>

@@ -261,7 +261,11 @@ def buecher_von_autor(autor, max_results=40):
         if not titel or schluessel in gesehen:
             continue
         gesehen.add(schluessel)
+        autoren_liste = info.get("authors", [])
         ergebnisse.append({
+            "exakt": any(_norm(x) == _norm(name) for x in autoren_liste),
+            "bewertungen": info.get("ratingsCount", 0) or 0,
+            "sprache": info.get("language", ""),
             "titel": titel,
             "untertitel": info.get("subtitle", ""),
             "autoren": ", ".join(info.get("authors", [])),

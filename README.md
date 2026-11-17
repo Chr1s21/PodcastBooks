@@ -38,6 +38,8 @@ Partner-Tag: `podcastbueche-21` (änderbar über `AMAZON_PARTNER_TAG=` in der `.
   (`amazon.de/dp/ISBN?tag=…`), sonst auf die Amazon-Suche mit Tag.
 - „Cover & Partnerlinks aktualisieren“ stellt vorhandene Suchlinks auf
   Produktlinks um. Eigene Links (z. B. `link.amazon/…`) bleiben unverändert.
+- **„🔎 Alle Gäste auf fehlende Bücher prüfen“**: geht alle Gäste in 15er-Blöcken
+  bei Google Books durch, zeigt pro Gast die bis zu 5 beliebtesten fehlenden Bücher.
 - Pro Gast: **„📚 Bücher vorschlagen“** listet alle Bücher, die Google Books
   von diesem Autor kennt – anhaken, speichern, fertig.
 
