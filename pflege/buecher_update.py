@@ -94,6 +94,17 @@ BUECHER = {
     251: ["Der Adolf in mir"],                                                    # Serdar Somuncu
 }
 
+# ---- Runde 3: blockweise geprüft und abgesegnet ----
+BUECHER.update({
+    30: ["Im Bann der AfD"],                                                      # Alexander Leschik
+    43: ["Out of the Dark"],                                                      # Martin Frost
+    54: ["Zone C"],                                                               # Sebastian Caspar
+    60: ["Kopfarbeit"],                                                           # Peter Vajkoczy
+    49: ["Snapshot Stories"],                                                     # Pascal Kerouche
+    59: ["Digital Unplugged"],                                                    # Philipp Westermeyer
+    51: ["Edeltalk"],                                                             # Papaplatte
+})
+
 # Vielschreiber: weitere Bestseller
 BUECHER[239] = BUECHER[239] + ["Lernen"]                                         # Manfred Spitzer
 BUECHER[166] = BUECHER[166] + ["Iran: Der falsche Krieg"]                        # Michael Lüders
