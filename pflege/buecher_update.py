@@ -148,6 +148,26 @@ RUNDE_4 = {
     198: ["All in"],                                                              # Fedor Holz
     210: ["Der Profiler", "Im Auftrag der Toten", "Die Psyche des Bösen"],        # Axel Petermann
 }
+# ---- Runde 5: Block 211–262 geprüft und abgesegnet ----
+RUNDE_4.update({
+    215: ["TITAN. (D)ein Weg ins Cockpit"],                                       # Gerald Groß
+    218: ["Die kleinen Holzdiebe und das Rätsel des Juggernaut"],                 # Wolfgang M. Schmitt
+    219: ["Das Herz schlägt links", "Die Wut wächst"],                            # Oskar Lafontaine
+    222: ["Körperglück", "Was Paare zusammenhält", "Emotionale Gewalt"],          # Werner Bartens
+    227: ["Krieg der Medien"],                                                    # Martin Andree
+    228: ["Der Taschenanwalt", "Das einzige Buch über Recht, das du lesen musst",
+          "Welches Recht gilt bei Mord im Weltraum?", "WTF?! So tickt das Netz",
+          "Recht im Online-Marketing"],                                           # Christian Solmecke
+    234: ["Räuberpistolen"],                                                      # $ick
+    236: ["Das einzige Buch, das Du über Finanzen lesen solltest"],               # Finanzfluss
+    238: ["Heute komme ich zuerst", "Gesundgevögelt", "Life Changing Sex"],       # Susanne Wendel
+    243: ["König im Schatten"],                                                   # Manuellsen
+    245: ["Die Akte Tengelmann", "Wir verlieren dieses Land"],                    # Liv von Boetticher
+    249: ["Im Ministerium der Lügen"],                                            # Boris Bondarew
+    253: ["Darm gut, alles gut"],                                                 # Luisa Werner
+    257: ["Mit Physik auf der Suche nach dem Sinn des Lebens",
+          "Mit Physik auf der Suche nach der Zukunft der Menschheit"],            # Tim Vollert
+})
 for _folge, _titel in RUNDE_4.items():
     BUECHER[_folge] = BUECHER.get(_folge, []) + _titel
 
