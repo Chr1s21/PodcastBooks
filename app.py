@@ -89,6 +89,13 @@ def home():
             a["kategorien_liste"] = []
         autoren.append(a)
 
+    # Kategorien mit Anzahl für die Filter-Buttons (häufigste zuerst)
+    zaehler = {}
+    for a in autoren:
+        for k in a["kategorien_liste"]:
+            zaehler[k] = zaehler.get(k, 0) + 1
+    alle_kategorien = sorted(zaehler.items(), key=lambda x: (-x[1], x[0]))
+
     return render_template(
         "index.html",
         autoren=autoren,
@@ -96,6 +103,7 @@ def home():
         selected_autor=selected_autor,
         ohne_cover=ohne_cover,
         meldung=meldung,
+        alle_kategorien=alle_kategorien,
     )
 
 

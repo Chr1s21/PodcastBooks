@@ -47,6 +47,14 @@
         .hinweis { font-size: 0.8em; color: #718096; margin-top: -10px; display: block; margin-bottom: 10px; }
         .kein-cover { font-size:0.8em; color:#718096; padding: 10px; }
 
+        .filter-box { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .chip { background: #e2e8f0; color: #4a5568; border-radius: 14px; padding: 4px 11px; font-size: 0.85em; font-weight: bold; }
+        .chip:hover { background: #cbd5e0; }
+        .chip.aktiv { background: #007BFF; color: white; }
+        .kategorie-badge { cursor: pointer; }
+        #filter-info { font-size: 0.85em; color: #718096; margin-top: 8px; }
+
         .affiliate-note { text-align: center; font-size: 0.85em; color: #666; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 15px; }
     </style>
 </head>
@@ -111,6 +119,17 @@
 
     <h2>Bibliothek</h2>
 
+    <div class="filter-box">
+        <input type="text" id="suche" placeholder="🔍 Gast suchen…" style="margin:0;">
+        <div class="filter-chips">
+            <button type="button" class="chip aktiv" data-kat="">Alle ({{ autoren|length }})</button>
+            {% for kat, anzahl in alle_kategorien %}
+                <button type="button" class="chip" data-kat="{{ kat }}">{{ kat }} ({{ anzahl }})</button>
+            {% endfor %}
+        </div>
+        <div id="filter-info"></div>
+    </div>
+
     {% if ohne_cover %}
         <div class="cover-bar">
             <span>🖼️ {{ ohne_cover }} Bücher haben noch kein Cover.</span>
@@ -121,7 +140,7 @@
     {% endif %}
     
     {% for autor in autoren %}
-        <div class="autor-block">
+        <div class="autor-block" data-name="{{ autor['name']|lower }}" data-kategorien="{{ autor['kategorien_liste']|join('|') }}">
             <div class="autor-header">
                 <div>
                     <h2 class="autor-title" style="display:inline-block; margin-right: 10px;">
@@ -132,7 +151,7 @@
                     {% if autor['kategorien_liste'] %}
                         <div style="display: inline-flex; gap: 5px; flex-wrap: wrap;">
                             {% for kat in autor['kategorien_liste'] %}
-                                <span class="kategorie-badge">{{ kat }}</span>
+                                <span class="kategorie-badge" data-kat="{{ kat }}" title="Nach {{ kat }} filtern">{{ kat }}</span>
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -240,6 +259,36 @@
     <p class="affiliate-note">
         * = Affiliate-Link / Werbelink. Wenn du über diesen Link einkaufst, unterstützen wir unseren Podcast. Für dich entstehen dabei keine Zusatzkosten.
     </p>
+
+    <script>
+        (function () {
+            const bloecke = Array.from(document.querySelectorAll('.autor-block'));
+            const chips = Array.from(document.querySelectorAll('.chip'));
+            const suche = document.getElementById('suche');
+            const info = document.getElementById('filter-info');
+            let aktiveKat = '';
+
+            function anwenden() {
+                const q = suche.value.trim().toLowerCase();
+                let sichtbar = 0;
+                bloecke.forEach(b => {
+                    const kats = b.dataset.kategorien ? b.dataset.kategorien.split('|') : [];
+                    const ok = (!aktiveKat || kats.includes(aktiveKat)) && (!q || b.dataset.name.includes(q));
+                    b.style.display = ok ? '' : 'none';
+                    if (ok) sichtbar++;
+                });
+                chips.forEach(c => c.classList.toggle('aktiv', c.dataset.kat === aktiveKat));
+                info.textContent = (aktiveKat || q) ? sichtbar + ' von ' + bloecke.length + ' Gästen' : '';
+            }
+
+            chips.forEach(c => c.addEventListener('click', () => { aktiveKat = c.dataset.kat; anwenden(); }));
+            document.querySelectorAll('.kategorie-badge').forEach(b => b.addEventListener('click', () => {
+                aktiveKat = b.dataset.kat; anwenden();
+                document.querySelector('.filter-box').scrollIntoView({ behavior: 'smooth' });
+            }));
+            suche.addEventListener('input', anwenden);
+        })();
+    </script>
 
 </body>
 </html>
